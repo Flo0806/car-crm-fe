@@ -74,15 +74,22 @@ body {
 }
 
 // Global Button Styles
-.button {
+.btn {
+  font-family: inherit;
   padding: $button-padding;
   border-radius: $button-border-radius;
   font-weight: $button-font-weight;
   border: none;
   cursor: pointer;
+  min-height: 33px;
   transition: background-color 0.3s ease;
 
-  &--primary {
+  &:disabled {
+    pointer-events: none;
+    opacity: 0.5;
+  }
+
+  &-primary {
     background-color: $button-primary-bg;
     color: $button-primary-text;
 
@@ -113,5 +120,20 @@ body {
   &:focus {
     border-color: $input-focus-border;
     outline: none; // Remove default outline
+  }
+}
+
+.btn-content {
+  font-family: inherit;
+  font-size: inherit;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  i {
+    &::after {
+      content: "";
+      margin-right: 1rem;
+    }
   }
 }
