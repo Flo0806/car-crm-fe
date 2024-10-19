@@ -35,15 +35,16 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from "vue";
-import axios, { AxiosError } from "axios";
+import { ref } from "vue";
+import axios from "axios";
 import { useAuthStore } from "@/stores/auth";
 import { SnackbarType } from "@/common/interfaces";
 import TheSnackbar from "@/components/ui/TheSnackbar.vue";
+import { useRouter } from "vue-router";
 
 const authStore = useAuthStore();
+const router = useRouter();
 
-const test = computed(() => authStore.accessToken);
 // Use env
 const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -95,10 +96,12 @@ const handleLogin = async () => {
     console.log("FERTIG MIT REQUEST", response.data);
 
     authStore.setTokens(response.data.accessToken, response.data.refreshToken); // Save tokens in store
+    authStore.login(response.data.email);
     // WARN: !!! Better use `httponly` cookie coming from backend for a production system !!!
     localStorage.setItem("accessToken", response.data.accessToken);
     localStorage.setItem("refreshToken", response.data.refreshToken);
-    // Redirect or further logic on successful login
+    // Redirect to home
+    router.push("/");
   } catch (error: any) {
     if (error.status) {
       switch (error.status) {
