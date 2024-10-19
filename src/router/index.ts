@@ -1,6 +1,9 @@
 import { createRouter, createWebHistory } from "vue-router";
-import HomeView from "../views/HomeView.vue";
+
 import LoginView from "@/views/LoginView.vue";
+import TheOverview from "@/views/TheOverview.vue";
+import { useAuthStore } from "@/stores/auth";
+import CustomerOverview from "@/views/CustomerOverview.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -8,7 +11,21 @@ const router = createRouter({
     {
       path: "/",
       name: "home",
-      component: HomeView,
+      component: TheOverview,
+      // beforeEnter: (to, from, next) => {
+      //   const authStore = useAuthStore();
+      //   if (!authStore.loggedIn) {
+      //     next({ name: "login" }); // Redirect to login if not logged in
+      //   } else {
+      //     next(); // Proceed to the route
+      //   }
+      // },
+      children: [
+        {
+          path: "customers", // Unterroute für Kunden
+          component: CustomerOverview, // Die Customer-Komponente wird hier geladen
+        },
+      ],
     },
     {
       path: "/login",
