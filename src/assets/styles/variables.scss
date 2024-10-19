@@ -1,0 +1,43 @@
+@import "~primeicons/primeicons.css";
+// src/styles/variables.scss
+
+// Primary Colors
+$primary-color: #6c7ae0; // Stylish gray-blue
+
+// Neutral Colors
+$light-gray: #f8f9fa; // Light gray for backgrounds
+$medium-gray: #e2e3e5; // Medium gray for borders or backgrounds
+$dark-gray: #343a40; // Dark gray for text or accents
+$gray-blue: #6c757d; // Grayish blue for subtle accents
+
+// Borders
+$border-color: $medium-gray; // Color for borders
+$border-radius: 4px; // Border radius for rounded corners
+
+// Backgrounds
+$background-light: $light-gray; // Light background for cards or sections
+$background-dark: $dark-gray; // Dark background for headers or footers
+
+// Text Colors
+$text-color: $dark-gray; // Default text color
+$text-color-light: $light-gray; // Light text color for contrast
+
+// Button Styles
+$button-primary-bg: $primary-color; // Background color for primary button
+$button-primary-text: $text-color-light; // Text color for primary button
+$button-error-bg: #dc3545; // Background color for error button
+$button-error-text: $text-color-light; // Text color for error button
+
+$button-padding: 0.5rem 1rem; // Button padding
+$button-border-radius: $border-radius; // Button border radius
+$button-font-weight: bold; // Button font weight
+
+// Input Field Styles
+$input-bg: $light-gray; // Background color for input fields
+$input-border: $medium-gray; // Border color for input fields
+$input-border-radius: $border-radius; // Border radius for input fields
+$input-padding: 0.5rem; // Padding for input fields
+$input-font-size: 1rem; // Font size for input fields
+
+// Input Field Focus Styles
+$input-focus-border: $primary-color; // Border color on focus
