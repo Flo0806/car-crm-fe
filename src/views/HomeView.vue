@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import TheWelcome from "../components/TheWelcome.vue";
+import LoginView from "./LoginView.vue";
+import TheSnackbar from "../components/ui/TheSnackbar.vue";
 </script>
 
 <template>
