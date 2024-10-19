@@ -12,7 +12,7 @@
   </teleport>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import { ref, watch, onMounted, onBeforeUnmount } from "vue";
 import { SnackbarType } from "@/common/interfaces";
 
@@ -34,7 +34,7 @@ const props = defineProps({
 const emit = defineEmits(["close"]);
 
 const visible = ref(false);
-let timeoutId;
+let timeoutId: any;
 
 const showSnackbar = () => {
   visible.value = true;
@@ -72,7 +72,7 @@ onMounted(() => {
 });
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .snackbar {
   position: fixed;
   top: 20px;
