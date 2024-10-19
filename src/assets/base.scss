@@ -73,6 +73,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+main {
+  width: 100wh;
+}
+
 // Global Button Styles
 .btn {
   font-family: inherit;
@@ -98,7 +102,7 @@ body {
     }
   }
 
-  &--error {
+  &-error {
     background-color: $button-error-bg;
     color: $button-error-text;
 
