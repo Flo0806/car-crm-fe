@@ -4,6 +4,10 @@
 
 // Primary Colors
 $primary-color: #6c7ae0; // Stylish gray-blue
+$font-color: #343a40;
+$text-dark: #2b2e30;
+$error-color: #dc3545;
+$inverse-font-color: #f8f9fa;
 
 // Neutral Colors
 $light-gray: #f8f9fa; // Light gray for backgrounds
@@ -27,7 +31,7 @@ $text-color-light: $light-gray; // Light text color for contrast
 // Button Styles
 $button-primary-bg: $primary-color; // Background color for primary button
 $button-primary-text: $text-color-light; // Text color for primary button
-$button-error-bg: #dc3545; // Background color for error button
+$button-error-bg: $error-color; // Background color for error button
 $button-error-text: $text-color-light; // Text color for error button
 
 $button-padding: 0.5rem 1rem; // Button padding

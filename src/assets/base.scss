@@ -71,6 +71,10 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  strong {
+    font-weight: bold; // Explizite Festlegung der Schriftstärke
+  }
 }
 
 main {
@@ -112,19 +116,61 @@ main {
   }
 }
 
-// Global Input Styles
-.input {
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid $input-border;
+  border-radius: $input-border-radius;
+  font-size: 1rem;
+  background-color: $input-bg;
+  color: $text-color;
+}
+
+input,
+select,
+textarea {
   background-color: $input-bg;
   border: 1px solid $input-border;
   border-radius: $input-border-radius;
   padding: $input-padding;
   font-size: $input-font-size;
-  width: 100%; // Full width
+  color: $text-color;
 
+  // Transition für sanfte Fokusänderung
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+
+  // Placeholder-Farbe für Inputs
+  &::placeholder {
+    color: $medium-gray;
+  }
+
+  // Fokuszustand
   &:focus {
     border-color: $input-focus-border;
-    outline: none; // Remove default outline
+    outline: none;
   }
+
+  // Fehlerzustand (kann für Validierung verwendet werden)
+  &.error {
+    border-color: $error-color;
+  }
+}
+
+// Spezifischer Stil für Select-Elemente
+select {
+  background-image: none; // Entfernt Standard-Pfeil in manchen Browsern
+  //appearance: none; // Entfernt Standard-Styling von Select-Elementen
+  background-color: $input-bg;
 }
 
 .btn-content {
