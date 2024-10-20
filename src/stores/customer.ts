@@ -24,6 +24,21 @@ export const useCustomerStore = defineStore("customer", {
       // Logik zum Hinzufügen eines neuen Kunden
       this.customers.push({ id: Date.now().toString(), ...customer }); // Beispiel für ID
     },
+    async changeCustomersAddress(customerId: string, addressId: string) {
+      try {
+        const response = await axios.put(
+          `${import.meta.env.VITE_BACKEND_URL}/customers/${
+            customerData!.value?._id
+          }/addresses/${selectedAddress!.value?._id}`,
+          selectedAddress!.value
+        );
+        console.log("Adresse erfolgreich aktualisiert:", response.data);
+        emit("close");
+      } catch (error) {
+        console.error("Fehler beim Aktualisieren der Adresse:", error);
+        throw error;
+      }
+    },
     editCustomer(updatedCustomer: Customer) {
       // Logik zum Bearbeiten eines Kunden
       const index = this.customers.findIndex(
