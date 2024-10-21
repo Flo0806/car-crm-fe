@@ -104,6 +104,18 @@ main {
     &:hover {
       background-color: darken($button-primary-bg, 10%);
     }
+
+    .icon {
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      i > {
+        width: 24px;
+        height: 24px;
+      }
+    }
   }
 
   &-error {
@@ -171,6 +183,13 @@ select {
   background-image: none; // Entfernt Standard-Pfeil in manchen Browsern
   //appearance: none; // Entfernt Standard-Styling von Select-Elementen
   background-color: $input-bg;
+}
+
+.is-invalid {
+  border-color: red;
+  border-style: solid;
+  border-width: 1;
+  background-color: #ffe6e6;
 }
 
 .btn-content {
