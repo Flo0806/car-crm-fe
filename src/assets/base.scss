@@ -73,7 +73,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 
   strong {
-    font-weight: bold; // Explizite Festlegung der Schriftstärke
+    font-weight: bold; // Set strong text style
   }
 }
 
@@ -178,10 +178,9 @@ textarea {
   }
 }
 
-// Spezifischer Stil für Select-Elemente
+// Select elements
 select {
-  background-image: none; // Entfernt Standard-Pfeil in manchen Browsern
-  //appearance: none; // Entfernt Standard-Styling von Select-Elementen
+  background-image: none; // Will remove standard arrows in some browsers
   background-color: $input-bg;
 }
 
