@@ -1,6 +1,16 @@
 <template>
   <div class="contact-list-container">
-    <h3>Kontaktpersonen</h3>
+    <div style="display: flex">
+      <h3>Kontaktpersonen</h3>
+      <span style="flex-grow: 1"></span>
+      <button
+        type="button"
+        @click="createNewContact"
+        class="btn btn-primary icon"
+      >
+        <i class="pi pi-plus"></i>
+      </button>
+    </div>
     <div class="contact-list">
       <div
         v-for="contact in contacts"
@@ -22,7 +32,7 @@
 <script lang="ts" setup>
 import { defineProps, defineEmits } from "vue";
 
-// Props - Liste der Kontaktpersonen
+// Props - List of contact persons
 const props = defineProps({
   contacts: Array as () => Array<{
     _id: string;
@@ -35,12 +45,24 @@ const props = defineProps({
   }>,
 });
 
-// Emits - Das Event, das bei Klick auf eine Kontaktperson zurückgegeben wird
+// Click on contact event
 const emit = defineEmits(["contactSelected"]);
 
-// Methode zum Selektieren einer Kontaktperson
-const selectContact = (contact: any) => {
-  emit("contactSelected", contact); // Emit-Event mit der ausgewählten Kontaktperson
+// If contact is selected, return it to the parent
+const selectContact = (contact: ContactPerson) => {
+  emit("contactSelected", contact);
+};
+
+const createNewContact = () => {
+  const newContact = {
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    birthDate: "",
+    address: null,
+  } as ContactPerson;
+  emit("contactSelected", newContact);
 };
 </script>
 

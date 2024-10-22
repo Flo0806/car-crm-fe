@@ -6,7 +6,7 @@
         :class="['snackbar', type]"
         @transitionend="handleTransitionEnd"
       >
-        <span>{{ message }}</span>
+        <span style="white-space: pre-line">{{ message }}</span>
       </div>
     </transition>
   </teleport>
@@ -23,7 +23,7 @@ const props = defineProps({
   },
   type: {
     type: String,
-    default: SnackbarType.INFO, // "info", // can be 'info', 'success', 'error'
+    default: SnackbarType.INFO, // can be 'info', 'success', 'error'
   },
   duration: {
     type: Number,
@@ -35,13 +35,16 @@ const emit = defineEmits(["close"]);
 
 const visible = ref(false);
 let timeoutId: any;
+let currentMessage = ref<string | null>(null);
 
 const showSnackbar = () => {
   visible.value = true;
+  currentMessage.value = props.message; // Set current message
 
   // Hide snackbar after the specified duration
   timeoutId = setTimeout(() => {
     visible.value = false;
+    currentMessage.value = null; // Reset message after hiding
   }, props.duration);
 };
 
@@ -50,6 +53,7 @@ watch(
   () => props.message,
   () => {
     if (props.message) {
+      clearTimeout(timeoutId); // Clear previous timeout to avoid overlap
       showSnackbar();
     }
   }

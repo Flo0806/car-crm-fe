@@ -11,12 +11,12 @@
               <button @click="close" class="modal-close">&times;</button>
             </header>
             <main class="modal-body">
-              <!-- Flexibler Inhalt durch Slots -->
+              <!-- Flexible content with slot -->
               <slot></slot>
             </main>
             <footer class="modal-footer">
               <button class="btn btn-error" @click="close">Schließen</button>
-              <!-- Optionaler Slot für benutzerdefinierte Aktionen -->
+              <!-- Optional slot for custom buttons -->
               <slot name="actions"></slot>
             </footer>
           </div>
@@ -29,7 +29,7 @@
 <script lang="ts" setup>
 import { defineProps, defineEmits } from "vue";
 
-// Props für das Modal
+// Props
 defineProps({
   isVisible: {
     type: Boolean,
@@ -41,10 +41,9 @@ defineProps({
   },
 });
 
-// Event Emit für das Schließen des Modals
+// Close event
 const emit = defineEmits(["close"]);
 
-// Schließen des Modals
 const close = () => {
   emit("close");
 };
@@ -65,19 +64,14 @@ const close = () => {
   z-index: 1000;
 }
 
-/* Backdrop (Hintergrund) */
+/* Backdrop */
 .backdrop {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(
-    0,
-    0,
-    0,
-    0.5
-  ); /* Halbdurchsichtiger dunkler Hintergrund */
+  background-color: rgba(0, 0, 0, 0.5);
   z-index: 1000;
 }
 
@@ -149,7 +143,7 @@ const close = () => {
   }
 }
 
-/* Übergangsanimation */
+/* Animation for opening/closing */
 .modal-enter-active,
 .modal-leave-active {
   transition: opacity 0.5s ease;

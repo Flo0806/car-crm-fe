@@ -12,7 +12,8 @@
         @click="selectAddress(address._id)"
       >
         <p class="address-text">
-          {{ address._id }}, {{ address.street }}, {{ address.city }}
+          {{ address.street }}, <strong>{{ address.zip }}</strong>
+          {{ address.city }}
         </p>
       </div>
     </div>
@@ -22,22 +23,22 @@
 <script lang="ts" setup>
 import { defineProps, defineEmits } from "vue";
 
-// Props - Liste der Adressen und ID der aktuell zugewiesenen Adresse
+// Props - List of addresses and the id of the current given address
 const props = defineProps({
   addresses: Array as () => Array<{
     _id: string;
     street: string;
     city: string;
   }>,
-  selectedAddressId: String, // ID der dem Kontakt zugewiesenen Adresse
+  selectedAddressId: String, // Id of the address (relation)
 });
 
-// Emits - Event, das bei Klick auf eine Adresse zurückgegeben wird
+// Click event
 const emit = defineEmits(["addressSelected"]);
 
-// Methode zum Selektieren einer Adresse
+// Select an address
 const selectAddress = (addressId: string) => {
-  emit("addressSelected", addressId); // Emit-Event mit der ausgewählten Adress-ID
+  emit("addressSelected", addressId);
 };
 </script>
 

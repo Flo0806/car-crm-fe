@@ -4,6 +4,7 @@
     @close="closeModal"
     title="Kundendaten bearbeiten"
   >
+    <!--Simple loading text-->
     <template #default>
       <div v-if="isLoading" class="loading-spinner">
         <div class="spinner"></div>
@@ -36,12 +37,12 @@
           </form>
         </div>
 
-        <!-- Adressen Ansicht -->
+        <!-- Addresses view -->
         <div v-if="viewState === 'addresses' && selectedAddress">
           <h3>Adresse bearbeiten</h3>
-          <form style="margin-top: 1rem" @submit.prevent="submitAddressData">
-            <!-- Loop über die Adressen mit Feldern in form-group-Struktur -->
+          <form style="margin-top: 1rem">
             <div class="address-item">
+              <!-- Company name -->
               <div class="form-group">
                 <label for="companyName">Firmenname</label>
                 <input
@@ -53,39 +54,7 @@
                 />
               </div>
 
-              <div class="form-group">
-                <label for="country">Land</label>
-                <input
-                  type="text"
-                  v-model="selectedAddress.country"
-                  id="country"
-                  placeholder="Land"
-                  class="form-control"
-                />
-              </div>
-
-              <div class="form-group">
-                <label for="zip">PLZ</label>
-                <input
-                  type="text"
-                  v-model="selectedAddress.zip"
-                  id="zip"
-                  placeholder="Postleitzahl"
-                  class="form-control"
-                />
-              </div>
-
-              <div class="form-group">
-                <label for="city">Stadt</label>
-                <input
-                  type="text"
-                  v-model="selectedAddress.city"
-                  id="city"
-                  placeholder="Stadt"
-                  class="form-control"
-                />
-              </div>
-
+              <!-- Street -->
               <div class="form-group">
                 <label for="street">Straße</label>
                 <input
@@ -94,9 +63,58 @@
                   id="street"
                   placeholder="Straße"
                   class="form-control"
+                  :class="{ 'is-invalid': isAddressFieldInvalid('street') }"
+                  required
                 />
               </div>
 
+              <!-- Zip and city -->
+              <div style="display: flex">
+                <div
+                  class="form-group"
+                  style="width: 33.33%; margin-right: 1rem"
+                >
+                  <label for="zip">PLZ</label>
+                  <input
+                    type="text"
+                    v-model="selectedAddress.zip"
+                    id="zip"
+                    placeholder="Postleitzahl"
+                    class="form-control"
+                    :class="{ 'is-invalid': isAddressFieldInvalid('zip') }"
+                    required
+                  />
+                </div>
+
+                <div class="form-group" style="width: calc(66.66% - 1rem)">
+                  <label for="city">Stadt</label>
+                  <input
+                    type="text"
+                    v-model="selectedAddress.city"
+                    id="city"
+                    placeholder="Stadt"
+                    class="form-control"
+                    :class="{ 'is-invalid': isAddressFieldInvalid('city') }"
+                    required
+                  />
+                </div>
+              </div>
+
+              <!-- Country -->
+              <div class="form-group">
+                <label for="country">Land</label>
+                <input
+                  type="text"
+                  v-model="selectedAddress.country"
+                  id="country"
+                  placeholder="Land"
+                  class="form-control"
+                  :class="{ 'is-invalid': isAddressFieldInvalid('country') }"
+                  required
+                />
+              </div>
+
+              <!-- Email -->
               <div class="form-group">
                 <label for="email">Email</label>
                 <input
@@ -105,112 +123,140 @@
                   id="email"
                   placeholder="Email-Adresse"
                   class="form-control"
+                  :class="{
+                    'is-invalid': isAddressFieldInvalid('email', true),
+                  }"
+                  required
                 />
               </div>
 
-              <div class="form-group">
-                <label for="phone">Telefon</label>
-                <input
-                  type="text"
-                  v-model="selectedAddress.phone"
-                  id="phone"
-                  placeholder="Telefonnummer"
-                  class="form-control"
-                />
-              </div>
+              <!-- Phone and fax -->
+              <div style="display: flex">
+                <div
+                  class="form-group"
+                  style="width: calc(50% - 0.5rem); margin-right: 1rem"
+                >
+                  <label for="phone">Telefon</label>
+                  <input
+                    type="text"
+                    v-model="selectedAddress.phone"
+                    id="phone"
+                    placeholder="Telefonnummer"
+                    class="form-control"
+                  />
+                </div>
 
-              <div class="form-group">
-                <label for="fax">Fax</label>
-                <input
-                  type="text"
-                  v-model="selectedAddress.fax"
-                  id="fax"
-                  placeholder="Faxnummer"
-                  class="form-control"
-                />
+                <div class="form-group" style="width: calc(50% - 0.5rem)">
+                  <label for="fax">Fax</label>
+                  <input
+                    type="text"
+                    v-model="selectedAddress.fax"
+                    id="fax"
+                    placeholder="Faxnummer"
+                    class="form-control"
+                  />
+                </div>
               </div>
-
-              <!-- Löschen-Button bleibt unverändert -->
-              <button class="btn btn-error" @click="deleteAddress(index)">
-                Löschen
-              </button>
             </div>
           </form>
+          <!-- Delete button-->
+          <button type="button" class="btn btn-error" @click="deleteAddress()">
+            Löschen
+          </button>
           <button class="btn btn-primary" type="button" @click="backToCustomer">
             Zurück zu Kundendaten
           </button>
         </div>
 
-        <!-- Kontaktpersonen Ansicht -->
-        <div v-if="viewState === 'contacts'">
+        <!-- Contact person view -->
+        <div v-if="viewState === 'contacts' && selectedContact">
           <h3>Kontaktpersonen bearbeiten</h3>
-          <div class="contact-item">
-            <div class="form-group">
-              <label for="firstName">Vorname</label>
-              <input
-                type="text"
-                v-model="selectedContact!.firstName"
-                id="firstName"
-                placeholder="Vorname"
-                class="form-control"
-              />
-            </div>
+          <form>
+            <div class="contact-item">
+              <!-- Firstname -->
+              <div class="form-group">
+                <label for="firstName">Vorname</label>
+                <input
+                  type="text"
+                  v-model="selectedContact!.firstName"
+                  id="firstName"
+                  placeholder="Vorname"
+                  class="form-control"
+                  :class="{ 'is-invalid': isContactFieldInvalid('firstName') }"
+                  required
+                />
+              </div>
 
-            <div class="form-group">
-              <label for="lastName">Nachname</label>
-              <input
-                type="text"
-                v-model="selectedContact!.lastName"
-                id="lastName"
-                placeholder="Nachname"
-                class="form-control"
-              />
-            </div>
+              <!-- Lastname -->
+              <div class="form-group">
+                <label for="lastName">Nachname</label>
+                <input
+                  type="text"
+                  v-model="selectedContact!.lastName"
+                  id="lastName"
+                  placeholder="Nachname"
+                  class="form-control"
+                  :class="{ 'is-invalid': isContactFieldInvalid('lastName') }"
+                  required
+                />
+              </div>
 
-            <div class="form-group">
-              <label for="email">Email</label>
-              <input
-                type="email"
-                v-model="selectedContact!.email"
-                id="email"
-                placeholder="Email"
-                class="form-control"
-              />
-            </div>
+              <!-- Email -->
+              <div class="form-group">
+                <label for="email">Email</label>
+                <input
+                  type="email"
+                  v-model="selectedContact!.email"
+                  id="email"
+                  placeholder="Email"
+                  class="form-control"
+                  :class="{
+                    'is-invalid': isContactFieldInvalid('email', true),
+                  }"
+                  required
+                />
+              </div>
 
-            <div class="form-group">
-              <label for="phone">Telefon</label>
-              <input
-                type="text"
-                v-model="selectedContact!.phone"
-                id="phone"
-                placeholder="Telefon"
-                class="form-control"
-              />
-            </div>
+              <!-- Phone -->
+              <div class="form-group">
+                <label for="phone">Telefon</label>
+                <input
+                  type="text"
+                  v-model="selectedContact!.phone"
+                  id="phone"
+                  placeholder="Telefon"
+                  class="form-control"
+                  :class="{ 'is-invalid': isContactFieldInvalid('phone') }"
+                  required
+                />
+              </div>
 
-            <div class="form-group">
-              <label for="birthDate">Geburtsdatum</label>
-              <input
-                type="date"
-                v-model="selectedContact!.birthDate"
-                id="birthDate"
-                class="form-control"
-              />
-            </div>
+              <!-- Birthdate -->
+              <div class="form-group">
+                <label for="birthDate">Geburtsdatum</label>
+                <input
+                  type="date"
+                  v-model="selectedContact!.birthDate"
+                  id="birthDate"
+                  class="form-control"
+                />
+              </div>
 
-            <div style="max-height: 250px; overflow-y: auto">
-              <contact-address-list
-                :addresses="customerData!.addresses"
-                :selectedAddressId="selectedContact!.address"
-                @addressSelected="onContactAddressChanged"
-              ></contact-address-list>
+              <!-- Address List -->
+              <div style="max-height: 250px; overflow-y: auto">
+                <contact-address-list
+                  :addresses="customerData!.addresses"
+                  :selectedAddressId="selectedContact!.address"
+                  @addressSelected="onContactAddressChanged"
+                ></contact-address-list>
+              </div>
             </div>
-
-            <!-- Speichern- und Löschen-Buttons -->
-            <!-- <button @click="deleteContact" class="button-error">Löschen</button> -->
-          </div>
-          <!-- <button @click="addContact">Neue Kontaktperson hinzufügen</button> -->
+          </form>
+          <!-- Delete button-->
+          <button type="button" class="btn btn-error" @click="deleteContact()">
+            Löschen
+          </button>
+          <!-- Back zu overview-->
           <button class="btn btn-primary" @click="backToCustomer">
             Zurück zu Kundendaten
           </button>
@@ -218,31 +264,50 @@
       </div>
     </template>
 
+    <!-- Save button for all views. Logic behind on the opened view -->
     <template #actions>
       <button @click="saveChanges" class="btn btn-primary">Speichern</button>
     </template>
   </the-modal>
+  <!-- Snackbar for showing results -->
+  <the-snackbar
+    v-if="snackbarMessage"
+    :message="snackbarMessage"
+    :type="snackbarType"
+    @close="snackbarMessage = ''"
+  />
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, watch } from "vue";
-import axios from "axios";
+import { ref, watch } from "vue";
 import {
   type Address,
   type ContactPerson,
   type CustomerRaw,
 } from "@/common/interfaces";
+import { useCustomerStore } from "@/stores/customer";
+import axios from "axios";
 import TheModal from "./ui/TheModal.vue";
 import AddressList from "./AddressList.vue";
 import ContactList from "./ContactList.vue";
 import ContactAddressList from "./ContactAddressList.vue";
+import TheSnackbar from "@/components/ui/TheSnackbar.vue";
+import { SnackbarType } from "@/common/interfaces";
 
 const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-// Props für den Modal-Status
+// Use Store
+const customerStore = useCustomerStore();
+
+// Snackbar
+const snackbarMessage = ref("");
+const snackbarType = ref(SnackbarType.SUCCESS);
+
+// Props for Modals state
 const props = defineProps({
   isVisible: Boolean,
-  customerId: String, // Die ID des Kunden, der bearbeitet wird
+  customerId: String, // Customer id which we'll work on
+  customerListIndex: Number, // Index of the overview list
 });
 
 // Loading
@@ -251,42 +316,34 @@ const isLoading = ref(true);
 const selectedAddress = ref<Address>();
 const selectedContact = ref<ContactPerson>();
 
-// Emit für das Schließen des Modals
+// Emit for closing modal
 const emit = defineEmits(["close", "save"]);
 
-// Interne Datenstruktur für den Kunden
-const customerData = ref<CustomerRaw | null>(null); // Wir werden die Daten aus dem Backend laden
+// Inter data structure for the customer (not flat - raw)
+const customerData = ref<CustomerRaw | null>(null); // Comes from backend
 
-// viewState zur Navigation zwischen Kundendaten, Adressen und Kontaktpersonen
-const viewState = ref("customer"); // Standardansicht: Kundendaten
+// viewState for navigation between contacts, addresses, overview
+const viewState = ref("customer"); // Standard view: customer overview
 
-// API-Aufruf, um die Kundendaten zu laden
+// API call to get the customer data
 const loadCustomerData = async () => {
-  console.log("CUSTOMER ID", props.customerId);
   if (!props.customerId) return;
 
   try {
-    console.log("START");
     const response = await axios.get(
       `${VITE_BACKEND_URL}/customers/${props.customerId}`
     );
     customerData.value = response.data;
     isLoading.value = false;
-    console.log("FERTIG");
   } catch (error) {
-    console.log("FEHLER");
-    console.error("Fehler beim Laden der Kundendaten:", error);
-  } finally {
-    console.log("DONE");
-    isLoading.value = false;
+    snackbarType.value = SnackbarType.ERROR;
+    snackbarMessage.value = "Unbekannter Fehler beim Laden des Kunden - 500";
+    console.error("Error while loading customer data", error);
+    // And no, here we dont reset the loading... The user must close and reopen the dialog. No customer? No forms!
   }
 };
 
-// Kunden laden, wenn das Modal geöffnet wird
-onMounted(() => {
-  loadCustomerData();
-});
-
+// If customer is changed (from parent) reload data!
 watch(
   () => props.customerId,
   () => {
@@ -296,99 +353,223 @@ watch(
   }
 );
 
-// Methoden für die Navigation
+// If we close the dialog and reopen it, we always wanna start at the first page, the customer page
+watch(
+  () => props.isVisible,
+  (newValue) => {
+    if (newValue) backToCustomer();
+  }
+);
+
+// Navigation helpers
 const switchToAddresses = () => (viewState.value = "addresses");
 const switchToContacts = () => (viewState.value = "contacts");
 const backToCustomer = () => (viewState.value = "customer");
 
-// Bearbeitungslogik für Adressen
-//   const addAddress = () => {
-//     if (customerData.value) {
-//       customerData.value.addresses.push({ street: "", city: "" });
-//     }
-//   };
-const editAddress = (index: number) => {
-  // Bearbeitung logik für Adressen
-};
-const deleteAddress = (index: number) => {
-  if (customerData.value) {
-    customerData.value.addresses.splice(index, 1);
-  }
-};
-
+// Address selected in List -> Switch intern view
 const onAddressSelected = (address: Address) => {
   selectedAddress.value = address;
-  viewState.value = "addresses";
+  switchToAddresses();
 };
 
+// Contact selected in List -> Switch intern view
 const onContactSelected = (contact: ContactPerson) => {
   selectedContact.value = contact;
-  viewState.value = "contacts";
+  switchToContacts();
 };
 
+// Contact view -> If we change contacts address we musst set the address id to the contact
 const onContactAddressChanged = (addressId: string) => {
-  console.log(selectedContact.value?.address, addressId);
   selectedContact.value!.address = addressId;
 };
 
-const editContact = (index: number) => {
-  // Bearbeitung logik für Kontaktpersonen
-};
+// Delete contact button - Logic in store
+const deleteContact = async (index: number) => {
+  try {
+    await customerStore.deleteContact(
+      customerData!.value?._id,
+      selectedContact!.value._id
+    );
+    snackbarType.value = SnackbarType.SUCCESS;
+    snackbarMessage.value = "Kontaktperson wurde gelöscht";
+  } catch (error) {
+    console.error(error);
+    snackbarType.value = SnackbarType.ERROR;
 
-const deleteContact = (index: number) => {
-  if (customerData.value) {
-    customerData.value.contactPersons.splice(index, 1);
+    if (error.status) {
+      switch (error.status) {
+        case 404:
+          snackbarMessage.value =
+            "Der Kunde wurde nicht mehr in der Datenbank gefunden.";
+          break;
+        case 400:
+          snackbarMessage.value =
+            "Kontaktperson konnte nicht gelöscht werden. Es muss mindestens eine Kontaktperson vorhanden sein.";
+          break;
+        default:
+          snackbarMessage.value =
+            "Fehler beim löschen der Kontaktperson. Bitte versuchen Sie es erneut.";
+          break;
+      }
+    }
   }
 };
 
-const submitCustomerData = () => {
-  console.log("HIER");
-};
+// Save changes for customer
+const submitCustomerData = async () => {};
 
-const submitAddressData = async () => {
+// Save the changed contact / Create new contact
+const submitContactData = async () => {
+  const isNew = selectedContact!.value!._id === undefined;
+
   try {
-    const response = await axios.put(
-      `${import.meta.env.VITE_BACKEND_URL}/customers/${
-        customerData!.value?._id
-      }/addresses/${selectedAddress!.value?._id}`,
-      selectedAddress!.value
-    );
-    console.log("Adresse erfolgreich aktualisiert:", response.data);
+    isNew
+      ? await customerStore.addContactToCustomer(
+          customerData!.value!._id,
+          selectedContact!.value
+        )
+      : await customerStore.updateContact(
+          customerData!.value?._id,
+          selectedContact!.value?._id,
+          selectedContact!.value,
+          props.customerListIndex
+        );
+    snackbarType.value = SnackbarType.SUCCESS;
+    snackbarMessage.value = isNew
+      ? "Kontaktperson wurde hinzugefügt"
+      : "Kontaktperson wurde aktualisiert";
     emit("close");
   } catch (error) {
-    console.error("Fehler beim Aktualisieren der Adresse:", error);
-    throw error;
+    console.log("ERROR", error);
+    snackbarType.value = SnackbarType.ERROR;
+    if (error.status) {
+      switch (error.status) {
+        case 400:
+          snackbarMessage.value = error.response.data.errors.join("\n");
+          break;
+        default:
+          snackbarMessage.value = !isNew
+            ? "Fehler beim hinzufügen der Kontaktperson. Bitte versuchen Sie es erneut."
+            : "Fehler beim aktualisieren der Kontaktperson. Bitte versuchen Sie es erneut.";
+          break;
+      }
+    } else
+      snackbarMessage.value = !isNew
+        ? "Fehler beim hinzufügen der Kontaktperson. Bitte versuchen Sie es erneut."
+        : "Fehler beim aktualisieren der Kontaktperson. Bitte versuchen Sie es erneut.";
   }
 };
 
-// Methode, um die Adresse für eine Kontaktperson zu finden
-const getAddressForContact = (addressId: string) => {
-  if (!customerData.value) return "Keine Adresse zugewiesen";
+// Save the changed address / Create new address
+const submitAddressData = async () => {
+  const isNew = selectedAddress!.value!._id === undefined;
 
-  const address = customerData.value.addresses.find(
-    (addr) => addr._id === addressId
-  );
-  return address
-    ? `${address.street}, ${address.city}`
-    : "Keine Adresse zugewiesen";
+  try {
+    console.log(customerData.value);
+    isNew
+      ? await customerStore.addAddressToCustomer(
+          customerData!.value!._id,
+          selectedAddress!.value
+        )
+      : await customerStore.updateAddress(
+          customerData!.value?._id,
+          selectedAddress!.value?._id,
+          selectedAddress!.value,
+          props.customerListIndex
+        );
+
+    snackbarType.value = SnackbarType.SUCCESS;
+    snackbarMessage.value = isNew
+      ? "Adresse wurde hinzugefügt."
+      : "Adresse wurde aktualisiert.";
+    emit("close");
+  } catch (error) {
+    snackbarType.value = SnackbarType.ERROR;
+    if (error.status) {
+      switch (error.status) {
+        case 400:
+          snackbarMessage.value = error.response.data.errors.join("\n");
+          break;
+        default:
+          snackbarMessage.value = !isNew
+            ? "Fehler beim hinzufügen der Adresse. Bitte versuchen Sie es erneut."
+            : "Fehler beim aktualisieren der Adresse. Bitte versuchen Sie es erneut.";
+          break;
+      }
+    } else
+      snackbarMessage.value = !isNew
+        ? "Fehler beim hinzufügen der Adresse. Bitte versuchen Sie es erneut."
+        : "Fehler beim aktualisieren der Adresse. Bitte versuchen Sie es erneut.";
+  }
 };
 
-// Methode zum Speichern und Schließen des Modals
+// Method to save changes by click on save button.
+/**
+ * Yes, we can use the submit.prevent, but we have 3 forms and the easiest way is to handle it like this:
+ */
 const saveChanges = async () => {
   if (viewState.value === "addresses") {
     console.log(selectedAddress.value);
     await submitAddressData();
+  } else if (viewState.value === "contacts") {
+    await submitContactData();
   }
-  //   emit("save", customerData.value); // Daten an das Eltern-Element senden
-  //   closeModal();
 };
 
+// Close modal :-)
 const closeModal = () => {
   emit("close");
 };
+
+//#region Validation
+// Function to check if a 'address' field is invalid
+const isAddressFieldInvalid = (field: string, isEmail: boolean = false) => {
+  const value =
+    selectedAddress.value[field as keyof typeof selectedAddress.value];
+
+  // If the field is empty
+  if (!value || value === "") {
+    return true;
+  }
+
+  // If it's an email field, validate the format - We only check the email this time
+  // TODO: Validate phone, fax, lengths in the frontend, too. This time we only validate it in the backend
+  if (isEmail && !validateEmail(value as string)) {
+    return true;
+  }
+
+  return false;
+};
+
+// Function to check if a 'contact' field is invalid
+const isContactFieldInvalid = (field: string, isEmail: boolean = false) => {
+  const value =
+    selectedContact.value[field as keyof typeof selectedContact.value];
+
+  // If the field is empty
+  if (!value) {
+    return true;
+  }
+
+  // If it's an email field, validate the format
+  // TODO: Validate phone, fax, lengths in the frontend, too. This time we only validate it in the backend
+  if (isEmail && !validateEmail(value as string)) {
+    return true;
+  }
+
+  return false;
+};
+
+// Email validation helper function
+const validateEmail = (email: string) => {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(email);
+};
+//#endregion
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+// Only some styles for marin, padding... Other styles are in sub components
 .address-item,
 .contact-item {
   margin-bottom: 10px;
