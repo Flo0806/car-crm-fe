@@ -1,24 +1,90 @@
-2
 <template>
   <div class="customer-view">
-    <h2>Kundendaten</h2>
-    <button @click="addCustomer" class="btn btn-primary">Neu</button>
+    <h2>Customer Data</h2>
+    <button @click="addCustomer" class="btn btn-primary">New</button>
 
+    <!--Table which holds all the customer data as special flat array-->
     <table>
       <thead>
         <tr>
-          <th>KdNr.</th>
-          <th>Firmenname</th>
-          <th>Vorname</th>
-          <th>Nachname</th>
-          <th>PLZ</th>
-          <th>Ort</th>
+          <th @click="sortTable('intNr')">
+            Customer No.
+            <i
+              v-if="sortBy === 'intNr'"
+              :class="
+                sortDirection === 'asc'
+                  ? 'pi pi-sort-amount-up-alt'
+                  : 'pi pi-sort-amount-down'
+              "
+            >
+            </i>
+          </th>
+          <th @click="sortTable('companyName')">
+            Company Name
+            <i
+              v-if="sortBy === 'companyName'"
+              :class="
+                sortDirection === 'asc'
+                  ? 'pi pi-sort-amount-up-alt'
+                  : 'pi pi-sort-amount-down'
+              "
+            >
+            </i>
+          </th>
+          <th @click="sortTable('firstName')">
+            First Name
+            <i
+              v-if="sortBy === 'firstName'"
+              :class="
+                sortDirection === 'asc'
+                  ? 'pi pi-sort-amount-up-alt'
+                  : 'pi pi-sort-amount-down'
+              "
+            >
+            </i>
+          </th>
+          <th @click="sortTable('lastName')">
+            Last Name
+            <i
+              v-if="sortBy === 'lastName'"
+              :class="
+                sortDirection === 'asc'
+                  ? 'pi pi-sort-amount-up-alt'
+                  : 'pi pi-sort-amount-down'
+              "
+            >
+            </i>
+          </th>
+          <th @click="sortTable('zip')">
+            Zip Code
+            <i
+              v-if="sortBy === 'zip'"
+              :class="
+                sortDirection === 'asc'
+                  ? 'pi pi-sort-amount-up-alt'
+                  : 'pi pi-sort-amount-down'
+              "
+            >
+            </i>
+          </th>
+          <th @click="sortTable('city')">
+            City
+            <i
+              v-if="sortBy === 'city'"
+              :class="
+                sortDirection === 'asc'
+                  ? 'pi pi-sort-amount-up-alt'
+                  : 'pi pi-sort-amount-down'
+              "
+            >
+            </i>
+          </th>
           <th></th>
         </tr>
       </thead>
       <tbody>
         <tr
-          v-for="customer in customers"
+          v-for="(customer, index) in paginatedCustomers"
           :key="customer.id"
           @click="openCustomerCard(customer)"
         >
@@ -30,69 +96,111 @@
           <td>{{ customer.city || "" }}</td>
           <td>
             <button
-              @click.stop="editCustomer(customer.id)"
+              @click.stop="editCustomer(customer.id, index)"
               class="btn btn-secondary"
             >
-              Bearbeiten
+              Edit
             </button>
             <button
               style="margin-left: 1rem"
               @click="deleteCustomer(customer.id)"
               class="btn btn-danger"
             >
-              Löschen
+              Delete
             </button>
           </td>
         </tr>
       </tbody>
     </table>
+
+    <!-- Pagination Component -->
+    <div class="pagination-container">
+      <the-pagination
+        :totalItems="100"
+        :currentPage="1"
+        :itemsPerPage="10"
+        :perPageOptions="[5, 10, 20]"
+        @pageChanged="changePage"
+        @perPageChanged="changeItemsPerPage"
+      />
+    </div>
   </div>
 
+  <!-- Simple modal to show a visit card of the customer -->
   <the-modal
     :isVisible="isModalVisible"
     @close="closeModal"
-    title="Kundendetails"
+    title="Customer Details"
   >
     <template #default>
       <div class="customer-card">
         <div class="customer-card-section">
-          <h3>{{ selectedCustomer?.companyName || "Unbekannt" }}</h3>
+          <h3>{{ selectedCustomer?.companyName || "Unknown" }}</h3>
           <hr />
-          <p><b>KdNr:</b> {{ selectedCustomer?.intNr }}</p>
+          <p><b>Customer No:</b> {{ selectedCustomer?.intNr }}</p>
           <p>
-            <strong>PLZ & Ort:</strong> {{ selectedCustomer?.zip }},
+            <strong>Zip & City:</strong> {{ selectedCustomer?.zip }},
             {{ selectedCustomer?.city }}
           </p>
         </div>
         <hr />
         <div class="customer-card-section">
-          <p><strong>Kontaktperson:</strong></p>
+          <p><strong>Contact Person:</strong></p>
           <p>
             {{ selectedCustomer?.firstName }} {{ selectedCustomer?.lastName }}
           </p>
           <p><strong>Email:</strong> {{ selectedCustomer?.email || "-" }}</p>
-          <p><strong>Telefon:</strong> {{ selectedCustomer?.phone || "-" }}</p>
+          <p><strong>Phone:</strong> {{ selectedCustomer?.phone || "-" }}</p>
         </div>
       </div>
     </template>
   </the-modal>
 
+  <!-- The edit component -->
   <customer-edit
     @close="closeCustomerEditModal"
     :customerId="customerIdToEdit!"
+    :customerListIndex="customerIndexToEdit"
     :isVisible="isEditModalVisible"
   ></customer-edit>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useCustomerStore } from "@/stores/customer";
 import TheModal from "@/components/ui/TheModal.vue";
 import CustomerEdit from "@/components/CustomerEdit.vue";
+import ThePagination from "@/components/ui/ThePagination.vue";
 import type { Customer } from "@/common/interfaces";
 
+// Use store
 const customerStore = useCustomerStore();
-const customers = ref(customerStore.customers);
+const customers = computed(() => customerStore.customers);
+
+// Sort customers based on selected column and direction
+const sortedCustomers = computed(() => {
+  return [...customers.value].sort((a, b) => {
+    let compareA = a[sortBy.value] || "";
+    let compareB = b[sortBy.value] || "";
+
+    if (typeof compareA === "string" && typeof compareB === "string") {
+      compareA = compareA.toLowerCase();
+      compareB = compareB.toLowerCase();
+    }
+
+    if (compareA < compareB) return sortDirection.value === "asc" ? -1 : 1;
+    if (compareA > compareB) return sortDirection.value === "asc" ? 1 : -1;
+    return 0;
+  });
+});
+
+// Table sorting
+const sortBy = ref<string>("intNr"); // Default sort column
+const sortDirection = ref<string>("asc"); // Sort direction (asc or desc)
+
+// Pagination
+const currentPage = ref(1);
+const itemsPerPage = ref(10); // Default to 10 entries per page
 
 // Modal state and selected customer
 const isModalVisible = ref(false);
@@ -100,19 +208,19 @@ const selectedCustomer = ref<Customer | null>(null);
 
 const isEditModalVisible = ref(false);
 const customerIdToEdit = ref<string | null>(null);
+const customerIndexToEdit = ref<number>(-1);
 
-// Funktion zum Abrufen der Kunden
+// Function to load customer data
 const loadCustomers = async () => {
-  await customerStore.fetchCustomers(); // Kunden aus dem Store abrufen
-  customers.value = customerStore.customers; // Aktualisieren des lokalen Refs
+  await customerStore.fetchCustomers(); // Fetch customers from the store
 };
 
-// Kunden beim Mounten der Komponente abrufen
+// Fetch customers when the component is mounted
 onMounted(() => {
   loadCustomers();
 });
 
-// Modals
+//#region Modals
 const openCustomerCard = (customer: Customer) => {
   selectedCustomer.value = customer;
   customerIdToEdit.value = customer.id;
@@ -127,31 +235,63 @@ const closeModal = () => {
 const closeCustomerEditModal = () => {
   isEditModalVisible.value = false;
   customerIdToEdit.value = null;
+  customerIndexToEdit.value = -1;
 };
-// Modals
+//#endregion Modals
 
 const addCustomer = () => {
-  // Logik zum Hinzufügen eines neuen Kunden
-  console.log("Neuen Kunden hinzufügen");
+  // Logic for adding a new customer
+  console.log("Adding a new customer");
 };
 
-const editCustomer = (id: string) => {
-  // Logik zum Bearbeiten eines Kunden
-  console.log(`Kunden ${id} bearbeiten`);
+const editCustomer = (id: string, customerIndex: number) => {
+  // Logic for editing a customer
   customerIdToEdit.value = id;
+  customerIndexToEdit.value = customerIndex;
   isEditModalVisible.value = true;
 };
 
 const deleteCustomer = (id: string) => {
-  // Logik zum Löschen eines Kunden
-  console.log(`Kunden ${id} löschen`);
+  // Logic for deleting a customer
+  console.log(`Deleting customer ${id}`);
+};
+
+// Sorting logic
+const sortTable = (column: string) => {
+  console.log("COLUMN", column, sortBy.value);
+  if (sortBy.value === column) {
+    sortDirection.value = sortDirection.value === "asc" ? "desc" : "asc"; // Toggle sort direction
+  } else {
+    sortBy.value = column;
+    sortDirection.value = "asc"; // Default to ascending
+  }
+};
+
+// Pagination logic
+// Calculate the currently visible customers based on the current page and items per page
+const paginatedCustomers = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value;
+  const end = start + itemsPerPage.value;
+  return sortedCustomers.value.slice(start, end);
+});
+
+// Function to change pages
+const changePage = (page: number) => {
+  currentPage.value = page;
+};
+
+// Change the number of items per page
+const changeItemsPerPage = (newItemsPerPage: number) => {
+  console.log("CHANGE ITEMS", newItemsPerPage);
+  itemsPerPage.value = newItemsPerPage;
+  currentPage.value = 1; // Reset to the first page
 };
 </script>
 
 <style lang="scss">
 .customer-view {
   h2 {
-    color: $primary-color; // Verwende die in deiner variables.scss definierte Farbe
+    color: $primary-color; // Use the color defined in variables.scss
   }
 
   table {
@@ -169,18 +309,34 @@ const deleteCustomer = (id: string) => {
     }
 
     th {
-      background-color: $background-dark; // Hintergrundfarbe für Header
+      cursor: pointer; // Because sorting
+      color: $inverse-font-color; // White text color
+      background-color: $background-dark; // Background color for the header
+
+      // The sorting icon
+      i {
+        margin-left: 0.5rem;
+        font-size: 0.9rem;
+      }
     }
 
     tbody tr:hover {
-      background-color: $hover-background-color; // Definiere deine Hover-Hintergrundfarbe
-      cursor: pointer; // Zeigt einen Zeiger-Cursor beim Hover
+      background-color: $hover-background-color;
+      cursor: pointer; // Shows pointer cursor on hover
     }
 
     td:last-child {
-      white-space: nowrap; // Verhindert, dass die Buttons umgebrochen werden
-      width: 1%; // Nimmt nur so viel Platz wie nötig
+      white-space: nowrap; // Prevent buttons from wrapping
+      width: 1%; // Only take as much space as needed
     }
+  }
+
+  // Center pagination with a little margin on top
+  .pagination-container {
+    width: 100%;
+    margin-top: 1rem;
+    display: flex;
+    justify-content: center;
   }
 }
 
