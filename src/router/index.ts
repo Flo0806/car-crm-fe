@@ -2,7 +2,6 @@ import { createRouter, createWebHistory } from "vue-router";
 
 import LoginView from "@/views/LoginView.vue";
 import TheOverview from "@/views/TheOverview.vue";
-import { useAuthStore } from "@/stores/auth";
 import CustomerOverview from "@/views/CustomerOverview.vue";
 
 const router = createRouter({
@@ -22,8 +21,8 @@ const router = createRouter({
       // },
       children: [
         {
-          path: "customers", // Unterroute für Kunden
-          component: CustomerOverview, // Die Customer-Komponente wird hier geladen
+          path: "customers",
+          component: CustomerOverview,
         },
       ],
     },
