@@ -25,9 +25,79 @@ export const useCustomerStore = defineStore("customer", {
       }
     },
     // We use the customer interface - with Omit we remove only the id (comes from backend!)
-    addCustomer(customer: Omit<Customer, "id">) {
-      // Logic to add a new customer
-      this.customers.push({ id: Date.now().toString(), ...customer }); // Example for generating an ID
+    async addCustomer() {
+      try {
+        // Payload für die Anfrage
+        const customerPayload = {
+          type: "COMPANY",
+          contactPersons: [
+            {
+              firstName: "Neuer",
+              lastName: "Kontakt",
+              email: "kontakt@neuerkunde.de",
+              phone: "123456789",
+            },
+          ],
+          addresses: [
+            {
+              companyName: "Neue Firma",
+              street: "Musterstraße 1",
+              city: "Musterstadt",
+              zip: "12345",
+              country: "Deutschland",
+              email: "info@neuefirma.de",
+              phone: "987654321",
+            },
+          ],
+        };
+
+        // HTTP Request to create the new customer
+        const response = await axios.post(
+          import.meta.env.VITE_BACKEND_URL + "/customers",
+          customerPayload
+        );
+
+        if (response.status === 201) {
+          const newCustomer = response.data; // Created customer from the response
+
+          // Now create a flat customer entry for the store
+          const flatCustomerEntry = {
+            id: newCustomer._id,
+            intNr: newCustomer.intNr,
+            type: newCustomer.type,
+            companyName: newCustomer.addresses[0].companyName,
+            country: newCustomer.addresses[0].country,
+            zip: newCustomer.addresses[0].zip,
+            city: newCustomer.addresses[0].city,
+            street: newCustomer.addresses[0].street,
+            email: newCustomer.addresses[0].email,
+            phone: newCustomer.addresses[0].phone,
+            fax: newCustomer.addresses[0].fax,
+            firstName: newCustomer.contactPersons[0].firstName,
+            lastName: newCustomer.contactPersons[0].lastName,
+            contactEmail: newCustomer.contactPersons[0].email,
+            contactPhone: newCustomer.contactPersons[0].phone,
+            birthDate: newCustomer.contactPersons[0].birthDate || null,
+            cId: newCustomer.contactPersons[0]._id, // Contact person ID
+            aId: newCustomer.addresses[0]._id, // Address ID
+          };
+
+          // Access the customer store and add the new flat customer entry
+          const copy = this.customers;
+          copy.push(flatCustomerEntry);
+          this.customers = [...copy];
+
+          console.log(
+            "New customer created and added to the store",
+            flatCustomerEntry
+          );
+        }
+      } catch (error: any) {
+        console.error("Error creating customer:", error);
+        if (error.response) {
+          console.error("Error details:", error.response.data);
+        }
+      }
     },
     // Add a new address to an existing customer
     async addAddressToCustomer(customerId: string, newAddressData: Address) {
@@ -393,18 +463,47 @@ export const useCustomerStore = defineStore("customer", {
         throw error;
       }
     },
-    editCustomer(updatedCustomer: Customer) {
+    async updateCustomer(
+      customerId: string,
+      type: "DEALER" | "COMPANY" | "PRIVATE"
+    ) {
       // Logic to edit a customer
-      const index = this.customers.findIndex(
-        (c) => c.id === updatedCustomer.id
-      );
+      try {
+        // PUT request to update the contact person
+        const response = await axios.put<{ customer: CustomerRaw }>(
+          `${import.meta.env.VITE_BACKEND_URL}/customers/${customerId}`,
+          { type }
+        );
+        return response.data;
+      } catch (error: any) {
+        console.log("Error while updating customer: ", error);
+        throw error;
+      }
+      const index = this.customers.findIndex((c) => c.id === customerId);
       if (index !== -1) {
-        this.customers[index] = updatedCustomer;
+        const copy = this.customers;
+        copy[index].type = type;
+        this.customers = [...copy];
       }
     },
-    deleteCustomer(id: string) {
+    async deleteCustomer(customerId: string) {
       // Logic to delete a customer
-      this.customers = this.customers.filter((customer) => customer.id !== id);
+      try {
+        const response = await axios.delete(
+          import.meta.env.VITE_BACKEND_URL + `/customers/${customerId}`
+        );
+        console.log("Customer deleted successfully:", response.data);
+        this.customers = this.customers.filter(
+          (customer) => customer.id !== customerId
+        );
+        return response.data;
+      } catch (error: any) {
+        console.error("Error deleting customer:", error);
+        if (error.response) {
+          console.error("Error details:", error.response.data);
+        }
+        throw error;
+      }
     },
   },
 });
