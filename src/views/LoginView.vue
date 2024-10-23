@@ -100,7 +100,7 @@ const handleLogin = async () => {
     localStorage.setItem("accessToken", response.data.accessToken);
     localStorage.setItem("refreshToken", response.data.refreshToken);
     // Redirect to home
-    router.push("/");
+    router.push("/customers");
   } catch (error: any) {
     if (error.status) {
       switch (error.status) {

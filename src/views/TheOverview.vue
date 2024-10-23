@@ -3,42 +3,48 @@
     <nav class="sidebar">
       <h1>Autohaus Maier</h1>
       <h2>{{ email }}</h2>
-      <button @click="handleLogout" class="btn btn-error">Logout</button>
+      <button type="button" @click="handleLogout" class="btn btn-error">
+        Logout
+      </button>
       <div class="menu">
-        <router-link to="/customers" class="menu-item">
+        <div class="menu-item" @click="onCsvImportClicked">
           <div class="menu-item-content">
             <i class="pi pi-users"></i> Kunden
-          </div></router-link
-        >
-        <router-link to="/contacts" class="menu-item">
-          <div class="menu-item-content">
-            <i class="pi pi-user"></i> Ansprechpartner
-          </div></router-link
-        >
-        <router-link to="/addresses" class="menu-item">
-          <div class="menu-item-content"><i class="pi pi-map"></i>Adressen</div>
-        </router-link>
+          </div>
+        </div>
       </div>
     </nav>
     <div class="content">
       <router-view />
     </div>
   </div>
+
+  <upload-csv :isVisible="showUploadModal" @close="uploadClose"></upload-csv>
 </template>
 
 <script lang="ts" setup>
 import { useAuthStore } from "@/stores/auth";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import UploadCsv from "@/components/UploadCsv.vue";
 
 const authStore = useAuthStore();
 const router = useRouter();
 
 const email = ref(authStore.email);
+const showUploadModal = ref(false);
 
 const handleLogout = async () => {
   await authStore.logout();
   router.push("/login"); // Redirect to login page after logout
+};
+
+const onCsvImportClicked = () => {
+  showUploadModal.value = true;
+};
+
+const uploadClose = () => {
+  showUploadModal.value = false;
 };
 </script>
 
