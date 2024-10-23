@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import LoginView from "@/views/LoginView.vue";
 import TheOverview from "@/views/TheOverview.vue";
 import CustomerOverview from "@/views/CustomerOverview.vue";
+import { useAuthStore } from "@/stores/auth";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -11,14 +12,14 @@ const router = createRouter({
       path: "/",
       name: "home",
       component: TheOverview,
-      // beforeEnter: (to, from, next) => {
-      //   const authStore = useAuthStore();
-      //   if (!authStore.loggedIn) {
-      //     next({ name: "login" }); // Redirect to login if not logged in
-      //   } else {
-      //     next(); // Proceed to the route
-      //   }
-      // },
+      beforeEnter: (to, from, next) => {
+        const authStore = useAuthStore();
+        if (!authStore.loggedIn) {
+          next({ name: "login" }); // Redirect to login if not logged in
+        } else {
+          next(); // Proceed to the route
+        }
+      },
       children: [
         {
           path: "customers",

@@ -9,7 +9,7 @@
         class="input"
         :class="{ 'input-error': emailError === 'invalid' }"
         @blur="validateFields('email')"
-        @keydown="validateFields('email')"
+        @input="validateFields('email')"
       />
       <input
         type="password"
@@ -18,7 +18,7 @@
         class="input"
         :class="{ 'input-error': passwordError === 'invalid' }"
         @blur="validateFields('password')"
-        @keydown="validateFields('password')"
+        @input="validateFields('password')"
       />
       <button type="submit" class="btn btn-primary" :disabled="!formValid">
         <div class="btn-content"><i class="pi pi-sign-in"></i>Login</div>
@@ -61,10 +61,12 @@ const emailError = ref("pending");
 const passwordError = ref("pending");
 const formValid = ref(false);
 
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // RegEx for validating an email
+
 const validateFields = (field: string) => {
   switch (field) {
     case "email":
-      emailError.value = !email.value.includes("@") ? "invalid" : "valid"; // Basic email validation
+      emailError.value = !emailPattern.test(email.value) ? "invalid" : "valid"; // Basic email validation
       break;
     case "password":
       passwordError.value = password.value.length < 6 ? "invalid" : "valid"; // Password must be at least 6 characters

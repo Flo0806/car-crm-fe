@@ -1,6 +1,6 @@
 <template>
   <div class="customer-view">
-    <h2>Customer Data</h2>
+    <h2>Kundenübersicht</h2>
     <button @click="addCustomer" class="btn btn-primary">
       <div class="btn-content icon"><i class="pi pi-plus"></i>Neuer Kunde</div>
     </button>
@@ -10,7 +10,7 @@
       <thead>
         <tr>
           <th @click="sortTable('intNr')">
-            Customer No.
+            KdNr.
             <i
               v-if="sortBy === 'intNr'"
               :class="
@@ -22,7 +22,7 @@
             </i>
           </th>
           <th @click="sortTable('companyName')">
-            Company Name
+            Firmenname
             <i
               v-if="sortBy === 'companyName'"
               :class="
@@ -34,7 +34,7 @@
             </i>
           </th>
           <th @click="sortTable('firstName')">
-            First Name
+            Vorname
             <i
               v-if="sortBy === 'firstName'"
               :class="
@@ -46,7 +46,7 @@
             </i>
           </th>
           <th @click="sortTable('lastName')">
-            Last Name
+            Nachname
             <i
               v-if="sortBy === 'lastName'"
               :class="
@@ -58,7 +58,7 @@
             </i>
           </th>
           <th @click="sortTable('zip')">
-            Zip Code
+            PLZ
             <i
               v-if="sortBy === 'zip'"
               :class="
@@ -70,7 +70,7 @@
             </i>
           </th>
           <th @click="sortTable('city')">
-            City
+            Ort
             <i
               v-if="sortBy === 'city'"
               :class="
@@ -136,23 +136,51 @@
   >
     <template #default>
       <div class="customer-card">
-        <div class="customer-card-section">
+        <!-- Kundeninformationen -->
+        <div class="customer-card-header">
           <h3>{{ selectedCustomer?.companyName || "Unknown" }}</h3>
-          <hr />
-          <p><b>Customer No:</b> {{ selectedCustomer?.intNr }}</p>
-          <p>
-            <strong>Zip & City:</strong> {{ selectedCustomer?.zip }},
-            {{ selectedCustomer?.city }}
-          </p>
+          <span class="customer-type">
+            {{
+              selectedCustomer?.type === "COMPANY"
+                ? "Firma"
+                : selectedCustomer?.type === "PRIVATE"
+                ? "Privatkunde"
+                : "Händler"
+            }}
+          </span>
         </div>
         <hr />
+
+        <!-- Adressinformationen -->
         <div class="customer-card-section">
-          <p><strong>Contact Person:</strong></p>
           <p>
-            {{ selectedCustomer?.firstName }} {{ selectedCustomer?.lastName }}
+            <strong>Kundennummer:</strong> {{ selectedCustomer?.intNr || "-" }}
           </p>
-          <p><strong>Email:</strong> {{ selectedCustomer?.email || "-" }}</p>
-          <p><strong>Phone:</strong> {{ selectedCustomer?.phone || "-" }}</p>
+          <p><strong>Straße:</strong> {{ selectedCustomer?.street || "-" }}</p>
+          <p>
+            <strong>Postleitzahl & Stadt:</strong>
+            {{ selectedCustomer?.zip || "-" }},
+            {{ selectedCustomer?.city || "-" }}
+          </p>
+          <p><strong>Land:</strong> {{ selectedCustomer?.country || "-" }}</p>
+        </div>
+
+        <hr />
+
+        <!-- Kontaktinformationen -->
+        <div class="customer-card-section">
+          <p><strong>Ansprechpartner:</strong></p>
+          <p>
+            <strong>Name:</strong> {{ selectedCustomer?.firstName }}
+            {{ selectedCustomer?.lastName }}
+          </p>
+          <p><strong>E-Mail:</strong> {{ selectedCustomer?.email || "-" }}</p>
+          <p><strong>Telefon:</strong> {{ selectedCustomer?.phone || "-" }}</p>
+          <p><strong>Fax:</strong> {{ selectedCustomer?.fax || "-" }}</p>
+          <p>
+            <strong>Geburtsdatum:</strong>
+            {{ selectedCustomer?.birthDate || "-" }}
+          </p>
         </div>
       </div>
     </template>
@@ -329,7 +357,6 @@ const sortTable = (column: string) => {
   if (sortBy.value === column) {
     sortDirection.value = sortDirection.value === "asc" ? "desc" : "asc"; // Toggle sort direction
   } else {
-    console.log("COLUMN:", column);
     sortBy.value = column;
     sortDirection.value = "asc"; // Default to ascending
   }
@@ -340,7 +367,6 @@ const sortTable = (column: string) => {
 const paginatedCustomers = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value;
   const end = start + itemsPerPage.value;
-  console.log(start, end);
   return sortedCustomers.value.slice(start, end);
 });
 
@@ -408,31 +434,60 @@ const changeItemsPerPage = (newItemsPerPage: number) => {
   }
 }
 
-.customer-card-section {
-  margin-bottom: 20px;
+.customer-card {
+  padding: 1rem;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  margin: auto;
+  font-family: Arial, sans-serif;
 
-  h3 {
-    margin-bottom: 5px;
-    font-size: 1.5rem;
-    color: $primary-color;
-    font-weight: bold;
-  }
+  .customer-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
 
-  p {
-    margin: 5px 0;
-    font-size: 1rem;
-    color: $text-dark;
+    h3 {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #333;
+    }
 
-    strong {
-      color: $text-color;
+    .customer-type {
+      padding: 0.25rem 0.5rem;
+      background-color: #007bff;
+      color: #fff;
+      font-size: 0.875rem;
+      border-radius: 5px;
     }
   }
 
   hr {
-    border: 0;
+    border: none;
     height: 1px;
-    background-color: $border-color;
-    margin: 10px 0;
+    background-color: #ccc;
+    margin: 1rem 0;
+  }
+
+  .customer-card-section {
+    p {
+      margin: 0.5rem 0;
+      font-size: 1rem;
+      color: #555;
+
+      strong {
+        color: #333;
+      }
+    }
+
+    /* Kontaktinformationen spezifisch */
+    &:last-child {
+      background-color: #eef2f7;
+      padding: 0.75rem;
+      border-radius: 5px;
+    }
   }
 }
 </style>

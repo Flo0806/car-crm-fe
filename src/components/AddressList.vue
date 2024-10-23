@@ -1,7 +1,7 @@
 <template>
   <div class="address-list-container">
     <div style="display: flex">
-      <h3>Addresses</h3>
+      <h3>Adressen</h3>
       <span style="flex-grow: 1"></span>
       <button
         @click="createNewAddress"

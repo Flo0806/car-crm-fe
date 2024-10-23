@@ -37,6 +37,7 @@
     <!-- Result screen -->
     <div v-if="isUploaded && !isLoading">
       <p>{{ uploadResult }}</p>
+      <p style="color: red" v-if="errorText !== null">{{ errorText }}</p>
     </div>
   </the-modal>
 </template>
@@ -67,6 +68,7 @@ const fileName = ref<string | null>(null);
 const isLoading = ref(false);
 const isUploaded = ref(false);
 const uploadResult = ref("");
+const errorText = ref<string | null>(null);
 
 // Handle file selection
 const handleFileSelected = (event: Event) => {
@@ -86,6 +88,7 @@ watch(
       isLoading.value = false;
       isUploaded.value = false;
       uploadResult.value = "";
+      errorText.value = null;
     }
   }
 );
@@ -129,6 +132,7 @@ const uploadCsv = async () => {
   } catch (error: any) {
     isLoading.value = false;
     isUploaded.value = true;
+    errorText.value = error.response.data.msg;
     console.error("Error uploading CSV:", error);
     if (error.response) {
       console.error("Error details:", error.response.data);
