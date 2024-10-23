@@ -1,53 +1,64 @@
-import { useAuthStore } from "@/stores/auth";
+import router from "@/router";
 import axios from "axios";
 
 const setup = () => {
+  // Request Interceptor
   axios.interceptors.request.use(
     (config) => {
-      // That's a way to handle with the store outside a component!
-      // const authStore = useAuthStore();
-      // console.log("Direct access:", authStore.accessToken);
-
-      // Better we use a httponly cookie in procution system!
       const token = localStorage.getItem("accessToken");
       if (token) {
-        // config.headers["Authorization"] = 'Bearer ' + token;  // for Spring Boot back-end
-        config.headers["x-access-token"] = token; // for Node.js Express back-end
+        config.headers["x-access-token"] = token; // Attach token to headers for backend
       }
-
       return config;
     },
     (error) => {
-      console.log(error);
       return Promise.reject(error);
     }
   );
 
+  // Response Interceptor
   axios.interceptors.response.use(
-    (res) => {
-      return res;
+    (response) => {
+      return response;
     },
     async (err) => {
       const originalConfig = err.config;
+      const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-      if (originalConfig.url !== "/auth/login" && err.response) {
-        // Access Token was expired
-        if (err.response.status === 401 && !originalConfig._retry) {
-          originalConfig._retry = true;
+      // Check if the error is not from the login endpoint and if a 403 error occurred
+      if (originalConfig.url.indexOf("/auth/login") === -1 && err.response) {
+        // Token expired
+        if (err.response.status === 403 && !originalConfig.retry) {
+          originalConfig.retry = true; // Set retry flag to avoid infinite loops
+
+          if (!localStorage.getItem("refreshToken")) {
+            await router.push("/login");
+            return Promise.reject(err);
+          }
 
           try {
-            const rs = await axios.post("/auth/token", {
-              refreshToken: "asdf2",
+            // Use the refresh token to get a new access token
+            const rs = await axios.post(VITE_BACKEND_URL + "/auth/token", {
+              refreshToken: localStorage.getItem("refreshToken"),
             });
 
             const { accessToken, refreshToken } = rs.data;
-            localStorage.setItem("accessToken", accessToken);
+
+            // Store new tokens in localStorage
             localStorage.setItem("refreshToken", refreshToken);
 
-            return axios(originalConfig);
+            // Set the new access token to the original request and resend it
+            originalConfig.headers["x-access-token"] = accessToken;
+
+            return axios(originalConfig); // Resend the original request
           } catch (_error) {
+            // Redirect to login in case of token refresh failure
+            await router.push("/login");
             return Promise.reject(_error);
           }
+        } else {
+          await router.push("/login");
+          return Promise.reject(err);
         }
       }
 
