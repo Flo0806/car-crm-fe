@@ -25,7 +25,6 @@ const setup = () => {
 
   axios.interceptors.response.use(
     (res) => {
-      console.log("RES", res);
       return res;
     },
     async (err) => {
@@ -44,7 +43,6 @@ const setup = () => {
             const { accessToken, refreshToken } = rs.data;
             localStorage.setItem("accessToken", accessToken);
             localStorage.setItem("refreshToken", refreshToken);
-            console.log(rs.data);
 
             return axios(originalConfig);
           } catch (_error) {
