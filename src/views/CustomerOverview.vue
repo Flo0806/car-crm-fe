@@ -162,6 +162,8 @@
     :customerId="customerIdToEdit!"
     :customerListIndex="customerIndexToEdit"
     :isVisible="isEditModalVisible"
+    :startSelectedContact="startSelectedContact"
+    :startSelectedAddress="startSelectedAddress"
   ></customer-edit>
 </template>
 
@@ -180,8 +182,8 @@ const customers = computed(() => customerStore.customers);
 // Sort customers based on selected column and direction
 const sortedCustomers = computed(() => {
   return [...customers.value].sort((a, b) => {
-    let compareA = a[sortBy.value] || "";
-    let compareB = b[sortBy.value] || "";
+    let compareA = (a as any)[sortBy.value] || "";
+    let compareB = (b as any)[sortBy.value] || "";
 
     if (typeof compareA === "string" && typeof compareB === "string") {
       compareA = compareA.toLowerCase();
@@ -209,6 +211,9 @@ const selectedCustomer = ref<Customer | null>(null);
 const isEditModalVisible = ref(false);
 const customerIdToEdit = ref<string | null>(null);
 const customerIndexToEdit = ref<number>(-1);
+
+const startSelectedContact = ref<string | undefined>(undefined);
+const startSelectedAddress = ref<string | undefined>(undefined);
 
 // Function to load customer data
 const loadCustomers = async () => {
@@ -245,6 +250,10 @@ const addCustomer = () => {
 };
 
 const editCustomer = (id: string, customerIndex: number) => {
+  startSelectedAddress.value =
+    sortedCustomers.value[customerIndex].aId || undefined;
+  startSelectedContact.value =
+    sortedCustomers.value[customerIndex].cId || undefined;
   // Logic for editing a customer
   customerIdToEdit.value = id;
   customerIndexToEdit.value = customerIndex;
@@ -258,7 +267,6 @@ const deleteCustomer = (id: string) => {
 
 // Sorting logic
 const sortTable = (column: string) => {
-  console.log("COLUMN", column, sortBy.value);
   if (sortBy.value === column) {
     sortDirection.value = sortDirection.value === "asc" ? "desc" : "asc"; // Toggle sort direction
   } else {
@@ -282,7 +290,6 @@ const changePage = (page: number) => {
 
 // Change the number of items per page
 const changeItemsPerPage = (newItemsPerPage: number) => {
-  console.log("CHANGE ITEMS", newItemsPerPage);
   itemsPerPage.value = newItemsPerPage;
   currentPage.value = 1; // Reset to the first page
 };

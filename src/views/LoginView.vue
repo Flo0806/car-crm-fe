@@ -93,7 +93,6 @@ const handleLogin = async () => {
       email: email.value,
       password: password.value,
     });
-    console.log("FERTIG MIT REQUEST", response.data);
 
     authStore.setTokens(response.data.accessToken, response.data.refreshToken); // Save tokens in store
     authStore.login(response.data.email);

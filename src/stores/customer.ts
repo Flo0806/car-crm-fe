@@ -126,31 +126,10 @@ export const useCustomerStore = defineStore("customer", {
 
         // After successful deletion from the backend, update the customer list in the store
         // Find all entries containing the deleted address (aId)
-        const cleanedData = this.customers.filter((entry) => {
-          // Check if the entry contains the deleted address
-          if (entry.aId === addressId) {
-            console.log("Found matching address");
-            // If the entry has no contact person (cId) and no customer (customerId), delete it
-            if (!entry.cId) {
-              return false; // Delete entry if neither a contact person nor address is present
-            } else {
-              // If the entry has a contact person, only remove the address details
-              entry.companyName = null;
-              entry.country = "";
-              entry.zip = "";
-              entry.city = "";
-              entry.street = "";
-              entry.email = null;
-              entry.phone = null;
-              entry.fax = null;
-              entry.aId = null; // Set the address to null as well
-              return true; // Keep the entry
-            }
-          }
-          return true; // Keep all other entries
-        });
+        const cleanedData = this.customers.filter(
+          (entry) => entry.aId === addressId
+        );
 
-        console.log(cleanedData);
         this.customers = [...cleanedData];
       } catch (error) {
         console.error("Error deleting address:", error);
@@ -253,7 +232,11 @@ export const useCustomerStore = defineStore("customer", {
           }/customers/${customerId}/contacts/${contactId}`,
           updatedContactData
         );
-        console.log("Contact person successfully updated:", response.data);
+        console.log(
+          "Contact person successfully updated:",
+          response.data,
+          customerIndex
+        );
 
         if (customerIndex !== -1) {
           const findCustomerStoreIndex = this.customers.findIndex(
@@ -290,74 +273,73 @@ export const useCustomerStore = defineStore("customer", {
                   null;
                 holdCustomerFlatList[findCustomerStoreIndex].birthDate = null;
               }
-
-              // Find or create a new entry for the updated contact person address
-              if (updatedContactData.address) {
-                // Find an entry with the same address but without a contact person
-                const findNewAddressIndex = holdCustomerFlatList.findIndex(
-                  (f) => f.aId === updatedContactData.address && f.cId === null
-                );
-
-                if (findNewAddressIndex > -1) {
-                  // Update the entry with the new contact person
-                  holdCustomerFlatList[findNewAddressIndex].cId = contactId;
-                  holdCustomerFlatList[findNewAddressIndex].firstName =
-                    updatedContactData.firstName;
-                  holdCustomerFlatList[findNewAddressIndex].lastName =
-                    updatedContactData.lastName;
-                  holdCustomerFlatList[findNewAddressIndex].contactEmail =
-                    updatedContactData.email;
-                  holdCustomerFlatList[findNewAddressIndex].contactPhone =
-                    updatedContactData.phone;
-                  holdCustomerFlatList[findNewAddressIndex].birthDate =
-                    updatedContactData.birthDate;
-                } else {
-                  // There is no entry with the same address, so create a new one
-
-                  const customerData = response.data.customer;
-                  const address = customerData.addresses.find(
-                    (f) => f._id === updatedContactData.address
-                  );
-                  const person = customerData.contactPersons.find(
-                    (f) => f._id === contactId
-                  );
-
-                  if (address && person) {
-                    holdCustomerFlatList.push({
-                      id: customerData._id,
-                      intNr: customerData.intNr,
-                      type: customerData.type,
-                      companyName: address.companyName || null,
-                      country: address.country,
-                      zip: address.zip,
-                      city: address.city,
-                      street: address.street,
-                      email: address.email || null,
-                      phone: address.phone || null,
-                      fax: address.fax || null,
-                      firstName: person.firstName,
-                      lastName: person.lastName,
-                      contactEmail: person.email || null,
-                      contactPhone: person.phone || null,
-                      birthDate: person.birthDate || null,
-                      cId: person._id, // Contact ID
-                      aId: address._id, // Address ID
-                    });
-                  }
-                }
-              }
+            }
+          }
+          // Find or create a new entry for the updated contact person address
+          if (updatedContactData.address) {
+            // Find an entry with the same address but without a contact person
+            const findNewAddressIndex = holdCustomerFlatList.findIndex(
+              (f) => f.aId === updatedContactData.address && f.cId === null
+            );
+            console.log(findNewAddressIndex, updatedContactData);
+            if (findNewAddressIndex > -1) {
+              // Update the entry with the new contact person
+              holdCustomerFlatList[findNewAddressIndex].cId = contactId;
+              holdCustomerFlatList[findNewAddressIndex].firstName =
+                updatedContactData.firstName;
+              holdCustomerFlatList[findNewAddressIndex].lastName =
+                updatedContactData.lastName;
+              holdCustomerFlatList[findNewAddressIndex].contactEmail =
+                updatedContactData.email;
+              holdCustomerFlatList[findNewAddressIndex].contactPhone =
+                updatedContactData.phone;
+              holdCustomerFlatList[findNewAddressIndex].birthDate =
+                updatedContactData.birthDate;
             } else {
-              // Address has not changed, only update the contact person details in the current entry
-              for (let prop in updatedContactData) {
-                if (prop === "id" || prop === "_id") continue;
-                if (
-                  (holdCustomerFlatList[findCustomerStoreIndex] as any)[
-                    prop
-                  ] !== undefined
-                ) {
-                  (holdCustomerFlatList[findCustomerStoreIndex] as any)[prop] =
-                    (updatedContactData as any)[prop];
-                }
+              // There is no entry with the same address, so create a new one
+
+              const customerData = response.data.customer;
+              const address = customerData.addresses.find(
+                (f) => f._id === updatedContactData.address
+              );
+              const person = customerData.contactPersons.find(
+                (f) => f._id === contactId
+              );
+
+              if (address && person) {
+                holdCustomerFlatList.push({
+                  id: customerData._id,
+                  intNr: customerData.intNr,
+                  type: customerData.type,
+                  companyName: address.companyName || null,
+                  country: address.country,
+                  zip: address.zip,
+                  city: address.city,
+                  street: address.street,
+                  email: address.email || null,
+                  phone: address.phone || null,
+                  fax: address.fax || null,
+                  firstName: person.firstName,
+                  lastName: person.lastName,
+                  contactEmail: person.email || null,
+                  contactPhone: person.phone || null,
+                  birthDate: person.birthDate || null,
+                  cId: person._id, // Contact ID
+                  aId: address._id, // Address ID
+                });
+              }
+            }
+          } else {
+            // Address has not changed, only update the contact person details in the current entry
+            for (let prop in updatedContactData) {
+              if (prop === "id" || prop === "_id") continue;
+              if (
+                (holdCustomerFlatList[findCustomerStoreIndex] as any)[prop] !==
+                undefined
+              ) {
+                (holdCustomerFlatList[findCustomerStoreIndex] as any)[prop] = (
+                  updatedContactData as any
+                )[prop];
               }
             }
           }
