@@ -482,7 +482,22 @@ const deleteContact = async () => {
 };
 
 // Save changes for customer
-const submitCustomerData = async () => {};
+const submitCustomerData = async () => {
+  try {
+    await customerStore.updateCustomer(
+      customerData!.value!._id,
+      customerData!.value!.type
+    );
+
+    snackbarType.value = SnackbarType.SUCCESS;
+    snackbarMessage.value = "Kundentyp wurde aktualisiert";
+    emit("close");
+  } catch (error: any) {
+    snackbarType.value = SnackbarType.ERROR;
+    snackbarMessage.value =
+      "Fehler beim aktualisieren des Kundentyps. Bitte versuchen Sie es später erneut";
+  }
+};
 
 // Save the changed contact / Create new contact
 const submitContactData = async () => {
@@ -574,9 +589,12 @@ const submitAddressData = async () => {
  */
 const saveChanges = async () => {
   if (viewState.value === "addresses") {
+    // TODO: Create enums
     await submitAddressData();
   } else if (viewState.value === "contacts") {
     await submitContactData();
+  } else if (viewState.value === "customer") {
+    await submitCustomerData();
   }
 };
 

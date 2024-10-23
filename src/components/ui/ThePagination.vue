@@ -10,7 +10,9 @@
     </button>
 
     <!-- Current page and page count-->
-    <span>Seite {{ currentPage }} von {{ totalPages }}</span>
+    <span style="color: black"
+      >Seite {{ currentPage }} von {{ totalPages }}</span
+    >
 
     <!-- Next page -->
     <button
@@ -45,7 +47,7 @@ const props = defineProps({
   },
   itemsPerPage: {
     type: Number,
-    default: 10,
+    default: 1,
   },
   perPageOptions: {
     type: Array as () => number[],
@@ -57,6 +59,7 @@ const emit = defineEmits(["pageChanged", "perPageChanged"]);
 
 // Intern data for items per page e.g.
 const totalPages = ref(Math.ceil(props.totalItems / props.itemsPerPage));
+console.log("TOTAL", totalPages, props.totalItems, props.itemsPerPage);
 const selectedPerPage = ref(props.itemsPerPage);
 
 // Watch total items per page

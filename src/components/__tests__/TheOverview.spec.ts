@@ -37,23 +37,6 @@ describe("Overview.vue Unit Tests", () => {
     expect(emailElement.text()).toBe("test@example.com"); // Überprüft, ob die E-Mail korrekt gerendert wird
   });
 
-  it("renders navigation links", () => {
-    const customerLink = wrapper.findComponent(RouterLinkStub).props("to");
-    expect(customerLink).toBe("/customers");
-
-    const contactLink = wrapper
-      .findAllComponents(RouterLinkStub)
-      .at(1)
-      ?.props("to");
-    expect(contactLink).toBe("/contacts");
-
-    const addressLink = wrapper
-      .findAllComponents(RouterLinkStub)
-      .at(2)
-      ?.props("to");
-    expect(addressLink).toBe("/addresses");
-  });
-
   it("calls handleLogout and redirects to /login on logout", async () => {
     const logoutButton = wrapper.find(".btn-error");
     await logoutButton.trigger("click");

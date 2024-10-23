@@ -40,6 +40,8 @@ const selectAddress = (addressId: string) => {
 </script>
 
 <style lang="scss" scoped>
+@use "sass:color";
+
 .address-list-container {
   padding: 1rem;
   margin-bottom: 1rem;
@@ -71,7 +73,10 @@ const selectAddress = (addressId: string) => {
 
 .selected-address {
   border-color: $error-color;
-  background-color: lighten($error-color, 40%);
+  background-color: color.adjust(
+    $error-color,
+    $lightness: 40%
+  ); // lighten($error-color, 40%);
 }
 
 .address-text {

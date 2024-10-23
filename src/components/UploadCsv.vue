@@ -7,7 +7,7 @@
     <div v-if="!isLoading && !isUploaded">
       <label for="csv-upload" class="btn btn-primary">
         <div class="btn-content icon">
-          <i class="pi pi-upload"></i> Choose CSV
+          <i class="pi pi-upload"></i> CSV Datei
         </div>
       </label>
       <input
@@ -45,6 +45,7 @@
 import { ref, watch } from "vue";
 import TheModal from "./ui/TheModal.vue";
 import axios from "axios";
+import { useCustomerStore } from "@/stores/customer";
 
 const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -53,6 +54,9 @@ const props = defineProps({
   isVisible: Boolean,
   onClose: Function,
 });
+
+// store
+const customerStore = useCustomerStore();
 
 // Emits
 const emit = defineEmits(["close"]);
@@ -80,25 +84,11 @@ watch(
       file.value = null;
       fileName.value = null;
       isLoading.value = false;
+      isUploaded.value = false;
       uploadResult.value = "";
     }
   }
 );
-
-// Function to upload file (mocked for demo purposes)
-const uploadFile = async () => {
-  if (!file.value) return;
-
-  isLoading.value = true;
-  isUploaded.value = false;
-
-  // Simulate file upload
-  setTimeout(() => {
-    isLoading.value = false;
-    isUploaded.value = true;
-    uploadResult.value = "Upload successful!";
-  }, 2000);
-};
 
 // Close the modal
 const closeModal = () => {
@@ -133,6 +123,8 @@ const uploadCsv = async () => {
     isUploaded.value = true;
     if (response.data.skipped) {
       uploadResult.value = response.data.skipped;
+
+      await customerStore.fetchCustomers();
     }
   } catch (error: any) {
     isLoading.value = false;
