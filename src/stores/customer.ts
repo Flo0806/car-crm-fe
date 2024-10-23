@@ -242,6 +242,7 @@ export const useCustomerStore = defineStore("customer", {
                   entry.aId === newContact.address && entry.cId === null
               );
 
+              console.log(existingAddressIndex);
               if (existingAddressIndex !== -1) {
                 // Update the existing entry with the new contact person
                 this.customers[existingAddressIndex].cId = newContact._id;
@@ -256,19 +257,22 @@ export const useCustomerStore = defineStore("customer", {
                 this.customers[existingAddressIndex].birthDate =
                   newContact.birthDate || null;
               } else {
+                const findAddress = response.data.customer.addresses.find(
+                  (f) => f._id === newContact.address
+                );
                 // No existing entry found, create a new entry for the contact person
                 this.customers.push({
                   id: updatedCustomer._id,
                   intNr: updatedCustomer.intNr,
                   type: updatedCustomer.type,
-                  companyName: null, // No company data for a contact person
-                  country: "",
-                  zip: "",
-                  city: "",
-                  street: "",
-                  email: null,
-                  phone: null,
-                  fax: null,
+                  companyName: findAddress?.companyName || null,
+                  country: findAddress?.country || "",
+                  zip: findAddress?.zip || "",
+                  city: findAddress?.city || "",
+                  street: findAddress?.street || "",
+                  email: findAddress?.email || "",
+                  phone: findAddress?.phone || "",
+                  fax: findAddress?.fax || null,
                   firstName: newContact.firstName,
                   lastName: newContact.lastName,
                   contactEmail: newContact.email || null,
@@ -463,6 +467,7 @@ export const useCustomerStore = defineStore("customer", {
         throw error;
       }
     },
+    // Update a customers type
     async updateCustomer(
       customerId: string,
       type: "DEALER" | "COMPANY" | "PRIVATE"
@@ -486,6 +491,7 @@ export const useCustomerStore = defineStore("customer", {
         this.customers = [...copy];
       }
     },
+    // Delete a customer with all its addresses and contact persons
     async deleteCustomer(customerId: string) {
       // Logic to delete a customer
       try {
