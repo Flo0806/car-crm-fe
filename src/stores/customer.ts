@@ -243,7 +243,6 @@ export const useCustomerStore = defineStore("customer", {
             (f) => f.cId === contactId
           );
           const holdCustomerFlatList = [...this.customers]; // Create a copy of the customer list
-
           if (findCustomerStoreIndex > -1) {
             // Check if the address has changed
             if (
@@ -281,7 +280,7 @@ export const useCustomerStore = defineStore("customer", {
             const findNewAddressIndex = holdCustomerFlatList.findIndex(
               (f) => f.aId === updatedContactData.address && f.cId === null
             );
-            console.log(findNewAddressIndex, updatedContactData);
+
             if (findNewAddressIndex > -1) {
               // Update the entry with the new contact person
               holdCustomerFlatList[findNewAddressIndex].cId = contactId;
@@ -331,24 +330,24 @@ export const useCustomerStore = defineStore("customer", {
             }
           } else {
             // Address has not changed, only update the contact person details in the current entry
-            for (let prop in updatedContactData) {
-              if (prop === "id" || prop === "_id") continue;
-              if (
-                (holdCustomerFlatList[findCustomerStoreIndex] as any)[prop] !==
-                undefined
-              ) {
-                (holdCustomerFlatList[findCustomerStoreIndex] as any)[prop] = (
-                  updatedContactData as any
-                )[prop];
+            if (findCustomerStoreIndex > -1)
+              for (let prop in updatedContactData) {
+                if (prop === "id" || prop === "_id") continue;
+                if (
+                  (holdCustomerFlatList[findCustomerStoreIndex] as any)[
+                    prop
+                  ] !== undefined
+                ) {
+                  (holdCustomerFlatList[findCustomerStoreIndex] as any)[prop] =
+                    (updatedContactData as any)[prop];
+                }
               }
-            }
           }
 
           // Update the store with the new customer list
           this.customers = [...holdCustomerFlatList];
-
-          return response.data.customer as CustomerRaw;
         }
+        return response.data.customer as CustomerRaw;
       } catch (error) {
         console.error("Error updating contact person:", error);
         throw error;
