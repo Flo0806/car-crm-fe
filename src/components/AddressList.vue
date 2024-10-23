@@ -16,7 +16,9 @@
         v-for="address in addresses"
         :key="address._id"
         class="address-item"
+        :class="{ highlighted: address._id === selectedAddressId }"
         @click="selectAddress(address)"
+        ref="addressRefs"
       >
         <p class="address-title">{{ address.companyName }}</p>
         <p class="address-details">{{ address.street }}, {{ address.city }}</p>
@@ -30,12 +32,19 @@
 
 <script lang="ts" setup>
 import type { Address } from "@/common/interfaces";
-import { defineProps, defineEmits } from "vue";
+import { defineProps, ref, onMounted, defineEmits } from "vue";
 
 // Props - List of addresses
 const props = defineProps({
   addresses: Array as () => Array<Address>,
+  startSelectedAddress: String,
 });
+
+// Reference for all address items
+const addressRefs = ref<HTMLElement[]>([]);
+
+// Selected address ID for highlighting
+const selectedAddressId = ref<string | null>(null);
 
 // Emits - The event emitted when an address is clicked
 const emit = defineEmits(["addressSelected"]);
@@ -56,9 +65,23 @@ const createNewAddress = () => {
     email: "",
     phone: "",
     fax: "",
-  } as ContactPerson;
+  } as Address;
   emit("addressSelected", newAddress);
 };
+
+// Scroll to the selected address on mount if startSelectedAddress is provided
+onMounted(() => {
+  if (props.startSelectedAddress && props.addresses) {
+    selectedAddressId.value = props.startSelectedAddress;
+    const targetAddress = addressRefs.value.find(
+      (refItem: any, index: number) =>
+        props.addresses![index]._id === props.startSelectedAddress
+    );
+    if (targetAddress) {
+      targetAddress.scrollIntoView({ behavior: "auto", block: "center" });
+    }
+  }
+});
 </script>
 
 <style lang="scss" scoped>
@@ -98,5 +121,11 @@ const createNewAddress = () => {
 
 .address-details {
   color: $text-dark;
+}
+
+.highlighted {
+  background-color: #fef9e7; /* Blasses Beige-Gelb */
+  box-shadow: 0 0 10px 2px rgba(255, 223, 105, 0.7); /* Gelber Schattenglanz */
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 </style>

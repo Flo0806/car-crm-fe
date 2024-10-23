@@ -21,15 +21,12 @@
 </template>
 
 <script lang="ts" setup>
+import type { Address } from "@/common/interfaces";
 import { defineProps, defineEmits } from "vue";
 
 // Props - List of addresses and the id of the current given address
 const props = defineProps({
-  addresses: Array as () => Array<{
-    _id: string;
-    street: string;
-    city: string;
-  }>,
+  addresses: Array as () => Array<Address>,
   selectedAddressId: String, // Id of the address (relation)
 });
 

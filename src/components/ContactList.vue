@@ -16,7 +16,9 @@
         v-for="contact in contacts"
         :key="contact._id"
         class="contact-item"
+        :class="{ highlighted: contact._id === selectedcontactId }"
         @click="selectContact(contact)"
+        ref="contactRefs"
       >
         <p class="contact-name">
           {{ contact.firstName }} {{ contact.lastName }}
@@ -30,20 +32,20 @@
 </template>
 
 <script lang="ts" setup>
-import { defineProps, defineEmits } from "vue";
+import type { ContactPerson } from "@/common/interfaces";
+import { defineProps, ref, onMounted, defineEmits } from "vue";
 
 // Props - List of contact persons
 const props = defineProps({
-  contacts: Array as () => Array<{
-    _id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    birthDate: string;
-    address: string;
-  }>,
+  contacts: Array as () => Array<ContactPerson>,
+  startSelectedContact: String,
 });
+
+// Reference for all address items
+const contactRefs = ref<HTMLElement[]>([]);
+
+// Selected address ID for highlighting
+const selectedcontactId = ref<string | null>(null);
 
 // Click on contact event
 const emit = defineEmits(["contactSelected"]);
@@ -64,6 +66,21 @@ const createNewContact = () => {
   } as ContactPerson;
   emit("contactSelected", newContact);
 };
+
+// Scroll to the selected address on mount if startSelectedAddress is provided
+onMounted(() => {
+  console.log(props.startSelectedContact, props.contacts);
+  if (props.startSelectedContact && props.contacts) {
+    selectedcontactId.value = props.startSelectedContact;
+    const targetContacts = contactRefs.value.find(
+      (refItem: any, index: number) =>
+        props.contacts![index]._id === props.startSelectedContact
+    );
+    if (targetContacts) {
+      targetContacts.scrollIntoView({ behavior: "auto", block: "center" });
+    }
+  }
+});
 </script>
 
 <style lang="scss" scoped>
@@ -103,5 +120,11 @@ const createNewContact = () => {
 
 .contact-details {
   color: $text-dark;
+}
+
+.highlighted {
+  background-color: #fef9e7; /* Blasses Beige-Gelb */
+  box-shadow: 0 0 10px 2px rgba(255, 223, 105, 0.7); /* Gelber Schattenglanz */
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 </style>

@@ -26,12 +26,14 @@
               <address-list
                 @addressSelected="onAddressSelected"
                 :addresses="customerData!.addresses"
+                :startSelectedAddress="props.startSelectedAddress"
               />
             </div>
             <div style="margin-top: 2rem">
               <contact-list
                 @contactSelected="onContactSelected"
                 :contacts="customerData!.contactPersons"
+                :startSelectedContact="props.startSelectedContact"
               />
             </div>
           </form>
@@ -246,7 +248,7 @@
               <div style="max-height: 250px; overflow-y: auto">
                 <contact-address-list
                   :addresses="customerData!.addresses"
-                  :selectedAddressId="selectedContact!.address"
+                  :selectedAddressId="selectedContact!.address || undefined"
                   @addressSelected="onContactAddressChanged"
                 ></contact-address-list>
               </div>
@@ -279,7 +281,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from "vue";
+import { ref, toValue, watch } from "vue";
 import {
   type Address,
   type ContactPerson,
@@ -308,13 +310,15 @@ const props = defineProps({
   isVisible: Boolean,
   customerId: String, // Customer id which we'll work on
   customerListIndex: Number, // Index of the overview list
+  startSelectedContact: String || undefined,
+  startSelectedAddress: String || undefined,
 });
 
 // Loading
 const isLoading = ref(true);
 
 const selectedAddress = ref<Address>();
-const selectedContact = ref<ContactPerson>();
+const selectedContact = ref<ContactPerson | undefined>(undefined);
 
 // Emit for closing modal
 const emit = defineEmits(["close", "save"]);
@@ -348,6 +352,7 @@ watch(
   () => props.customerId,
   () => {
     if (props.customerId) {
+      isLoading.value = true;
       loadCustomerData();
     }
   }
@@ -357,7 +362,9 @@ watch(
 watch(
   () => props.isVisible,
   (newValue) => {
-    if (newValue) backToCustomer();
+    if (newValue) {
+      backToCustomer();
+    }
   }
 );
 
@@ -383,16 +390,75 @@ const onContactAddressChanged = (addressId: string) => {
   selectedContact.value!.address = addressId;
 };
 
+const deleteAddress = async () => {
+  try {
+    await customerStore.deleteAddress(
+      customerData!.value!._id,
+      selectedAddress!.value!._id
+    );
+    snackbarType.value = SnackbarType.SUCCESS;
+    snackbarMessage.value = "Addresse wurde gelöscht";
+    let clone = customerData.value;
+
+    clone = {
+      ...clone,
+      contactPersons: clone!.contactPersons.map((data) => ({
+        ...data,
+        address:
+          data.address === selectedAddress!.value?._id ? null : data.address,
+      })),
+      addresses: clone!.addresses.filter(
+        (f) => f._id !== selectedAddress!.value!._id
+      ),
+    } as CustomerRaw;
+
+    selectedAddress.value = undefined;
+    customerData.value = clone;
+    backToCustomer();
+  } catch (error: any) {
+    console.error(error);
+    snackbarType.value = SnackbarType.ERROR;
+
+    if (error.status) {
+      switch (error.status) {
+        case 404:
+          snackbarMessage.value =
+            "Der Kunde wurde nicht mehr in der Datenbank gefunden.";
+          break;
+        case 400:
+          snackbarMessage.value =
+            "Addresse konnte nicht gelöscht werden. Es muss mindestens eine Addresse vorhanden sein.";
+          break;
+        default:
+          snackbarMessage.value =
+            "Fehler beim löschen der Addresse. Bitte versuchen Sie es erneut.";
+          break;
+      }
+    }
+  }
+};
+
 // Delete contact button - Logic in store
-const deleteContact = async (index: number) => {
+const deleteContact = async () => {
   try {
     await customerStore.deleteContact(
-      customerData!.value?._id,
-      selectedContact!.value._id
+      customerData!.value!._id,
+      selectedContact!.value!._id
     );
     snackbarType.value = SnackbarType.SUCCESS;
     snackbarMessage.value = "Kontaktperson wurde gelöscht";
-  } catch (error) {
+    let clone = customerData.value;
+
+    clone = {
+      ...clone,
+      contactPersons: clone!.contactPersons.filter(
+        (f) => f._id !== selectedContact!.value!._id
+      ),
+    } as CustomerRaw;
+    selectedContact.value = undefined;
+    customerData.value = clone;
+    backToCustomer();
+  } catch (error: any) {
     console.error(error);
     snackbarType.value = SnackbarType.ERROR;
 
@@ -426,12 +492,12 @@ const submitContactData = async () => {
     isNew
       ? await customerStore.addContactToCustomer(
           customerData!.value!._id,
-          selectedContact!.value
+          selectedContact!.value!
         )
       : await customerStore.updateContact(
-          customerData!.value?._id,
-          selectedContact!.value?._id,
-          selectedContact!.value,
+          customerData!.value!._id,
+          selectedContact!.value!._id,
+          selectedContact!.value!,
           props.customerListIndex
         );
     snackbarType.value = SnackbarType.SUCCESS;
@@ -439,7 +505,7 @@ const submitContactData = async () => {
       ? "Kontaktperson wurde hinzugefügt"
       : "Kontaktperson wurde aktualisiert";
     emit("close");
-  } catch (error) {
+  } catch (error: any) {
     console.log("ERROR", error);
     snackbarType.value = SnackbarType.ERROR;
     if (error.status) {
@@ -465,16 +531,15 @@ const submitAddressData = async () => {
   const isNew = selectedAddress!.value!._id === undefined;
 
   try {
-    console.log(customerData.value);
     isNew
       ? await customerStore.addAddressToCustomer(
           customerData!.value!._id,
-          selectedAddress!.value
+          selectedAddress!.value!
         )
       : await customerStore.updateAddress(
-          customerData!.value?._id,
-          selectedAddress!.value?._id,
-          selectedAddress!.value,
+          customerData!.value!._id,
+          selectedAddress!.value!._id,
+          selectedAddress!.value!,
           props.customerListIndex
         );
 
@@ -483,7 +548,7 @@ const submitAddressData = async () => {
       ? "Adresse wurde hinzugefügt."
       : "Adresse wurde aktualisiert.";
     emit("close");
-  } catch (error) {
+  } catch (error: any) {
     snackbarType.value = SnackbarType.ERROR;
     if (error.status) {
       switch (error.status) {
@@ -509,7 +574,6 @@ const submitAddressData = async () => {
  */
 const saveChanges = async () => {
   if (viewState.value === "addresses") {
-    console.log(selectedAddress.value);
     await submitAddressData();
   } else if (viewState.value === "contacts") {
     await submitContactData();
@@ -525,7 +589,7 @@ const closeModal = () => {
 // Function to check if a 'address' field is invalid
 const isAddressFieldInvalid = (field: string, isEmail: boolean = false) => {
   const value =
-    selectedAddress.value[field as keyof typeof selectedAddress.value];
+    selectedAddress!.value![field as keyof typeof selectedAddress.value];
 
   // If the field is empty
   if (!value || value === "") {
@@ -544,7 +608,7 @@ const isAddressFieldInvalid = (field: string, isEmail: boolean = false) => {
 // Function to check if a 'contact' field is invalid
 const isContactFieldInvalid = (field: string, isEmail: boolean = false) => {
   const value =
-    selectedContact.value[field as keyof typeof selectedContact.value];
+    selectedContact!.value![field as keyof typeof selectedContact.value];
 
   // If the field is empty
   if (!value) {
