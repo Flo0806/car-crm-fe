@@ -1,3 +1,5 @@
+@use "sass:color";
+
 /* color palette from <https://github.com/vuejs/theme> */
 :root {
   --vt-c-white: #ffffff;
@@ -102,7 +104,10 @@ main {
     color: $button-primary-text;
 
     &:hover {
-      background-color: darken($button-primary-bg, 10%);
+      background-color: color.adjust(
+        $button-primary-bg,
+        $lightness: -10%
+      ); // darken($button-primary-bg, 10%);
     }
 
     .icon {
@@ -111,7 +116,7 @@ main {
       justify-content: center;
       align-items: center;
 
-      i > {
+      i {
         width: 24px;
         height: 24px;
       }
@@ -123,7 +128,10 @@ main {
     color: $button-error-text;
 
     &:hover {
-      background-color: darken($button-error-bg, 10%);
+      background-color: color.adjust(
+        $button-error-bg,
+        $lightness: -10%
+      ); // darken($button-error-bg, 10%);
     }
   }
 }
