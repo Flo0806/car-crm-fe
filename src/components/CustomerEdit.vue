@@ -530,7 +530,6 @@ const submitContactData = async () => {
       : "Kontaktperson wurde aktualisiert";
     emit("close");
   } catch (error: any) {
-    console.log("ERROR", error);
     snackbarType.value = SnackbarType.ERROR;
     if (error.status) {
       switch (error.status) {

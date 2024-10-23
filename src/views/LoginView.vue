@@ -81,13 +81,6 @@ const validateFields = (field: string) => {
 
 const handleLogin = async () => {
   // Handle login logic here
-  console.log(
-    "Logging in with:",
-    email.value,
-    password.value,
-    VITE_BACKEND_URL
-  );
-
   try {
     const response = await axios.post(`${VITE_BACKEND_URL}/auth/login`, {
       email: email.value,

@@ -69,7 +69,6 @@ const createNewContact = () => {
 
 // Scroll to the selected address on mount if startSelectedAddress is provided
 onMounted(() => {
-  console.log(props.startSelectedContact, props.contacts);
   if (props.startSelectedContact && props.contacts) {
     selectedcontactId.value = props.startSelectedContact;
     const targetContacts = contactRefs.value.find(
