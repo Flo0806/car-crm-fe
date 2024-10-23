@@ -49,6 +49,8 @@ const uploadClose = () => {
 </script>
 
 <style lang="scss">
+@use "sass:color";
+
 .overview-container {
   display: flex;
   width: 100%;
@@ -73,6 +75,7 @@ const uploadClose = () => {
       margin-top: 2rem;
 
       .menu-item {
+        cursor: pointer;
         display: block;
         padding: 0.5rem 1rem;
         color: white;
@@ -90,7 +93,10 @@ const uploadClose = () => {
           }
         }
         &:hover {
-          background-color: darken($primary-color, 10%);
+          background-color: color.adjust(
+            $primary-color,
+            $lightness: -10%
+          ); // darken($primary-color, 10%);
         }
       }
     }

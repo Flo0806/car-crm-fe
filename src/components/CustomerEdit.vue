@@ -165,7 +165,12 @@
           <button type="button" class="btn btn-error" @click="deleteAddress()">
             Löschen
           </button>
-          <button class="btn btn-primary" type="button" @click="backToCustomer">
+          <button
+            class="btn btn-primary"
+            type="button"
+            style="margin-left: 1rem"
+            @click="backToCustomer"
+          >
             Zurück zu Kundendaten
           </button>
         </div>
@@ -259,7 +264,11 @@
             Löschen
           </button>
           <!-- Back zu overview-->
-          <button class="btn btn-primary" @click="backToCustomer">
+          <button
+            class="btn btn-primary"
+            tyle="margin-left: 1rem;"
+            @click="backToCustomer"
+          >
             Zurück zu Kundendaten
           </button>
         </div>

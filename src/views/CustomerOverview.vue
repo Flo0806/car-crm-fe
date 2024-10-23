@@ -1,7 +1,9 @@
 <template>
   <div class="customer-view">
     <h2>Customer Data</h2>
-    <button @click="addCustomer" class="btn btn-primary">New</button>
+    <button @click="addCustomer" class="btn btn-primary">
+      <div class="btn-content icon"><i class="pi pi-plus"></i>Neuer Kunde</div>
+    </button>
 
     <!--Table which holds all the customer data as special flat array-->
     <table>
@@ -85,7 +87,7 @@
       <tbody>
         <tr
           v-for="(customer, index) in paginatedCustomers"
-          :key="customer.id"
+          :key="customer.id + index.toString()"
           @click="openCustomerCard(customer)"
         >
           <td>{{ customer.intNr }}</td>
@@ -99,14 +101,14 @@
               @click.stop="editCustomer(customer.id, index)"
               class="btn btn-secondary"
             >
-              Edit
+              Bearbeiten
             </button>
             <button
+              @click.stop="openDeleteModal(customer)"
+              class="btn btn-secondary"
               style="margin-left: 1rem"
-              @click="deleteCustomer(customer.id)"
-              class="btn btn-danger"
             >
-              Delete
+              Löschen
             </button>
           </td>
         </tr>
@@ -116,9 +118,9 @@
     <!-- Pagination Component -->
     <div class="pagination-container">
       <the-pagination
-        :totalItems="100"
-        :currentPage="1"
-        :itemsPerPage="10"
+        :totalItems="sortedCustomers.length || 0"
+        :currentPage="currentPage"
+        :itemsPerPage="5"
         :perPageOptions="[5, 10, 20]"
         @pageChanged="changePage"
         @perPageChanged="changeItemsPerPage"
@@ -130,7 +132,7 @@
   <the-modal
     :isVisible="isModalVisible"
     @close="closeModal"
-    title="Customer Details"
+    title="Kundendetails"
   >
     <template #default>
       <div class="customer-card">
@@ -156,6 +158,22 @@
     </template>
   </the-modal>
 
+  <!-- Delete Customer modal-->
+  <the-modal
+    :isVisible="isDeleteModalVisible"
+    @close="closeDeleteModal"
+    title="Kunde löschen"
+  >
+    <template #default>
+      Soll der Kunde <strong>'{{ selectedCustomer!.intNr }}'</strong> wirklich
+      gelöscht werden?
+    </template>
+    <template #actions>
+      <button @click="deleteCustomer" class="btn btn-primary">
+        Bestätigen
+      </button>
+    </template>
+  </the-modal>
   <!-- The edit component -->
   <customer-edit
     @close="closeCustomerEditModal"
@@ -165,6 +183,13 @@
     :startSelectedContact="startSelectedContact"
     :startSelectedAddress="startSelectedAddress"
   ></customer-edit>
+
+  <the-snackbar
+    v-if="snackbarMessage"
+    :message="snackbarMessage"
+    :type="snackbarType"
+    @close="snackbarMessage = ''"
+  />
 </template>
 
 <script lang="ts" setup>
@@ -173,11 +198,16 @@ import { useCustomerStore } from "@/stores/customer";
 import TheModal from "@/components/ui/TheModal.vue";
 import CustomerEdit from "@/components/CustomerEdit.vue";
 import ThePagination from "@/components/ui/ThePagination.vue";
-import type { Customer } from "@/common/interfaces";
+import { SnackbarType, type Customer } from "@/common/interfaces";
+import TheSnackbar from "@/components/ui/TheSnackbar.vue";
 
 // Use store
 const customerStore = useCustomerStore();
 const customers = computed(() => customerStore.customers);
+
+// Snackbar
+const snackbarMessage = ref("");
+const snackbarType = ref(SnackbarType.SUCCESS);
 
 // Sort customers based on selected column and direction
 const sortedCustomers = computed(() => {
@@ -202,10 +232,11 @@ const sortDirection = ref<string>("asc"); // Sort direction (asc or desc)
 
 // Pagination
 const currentPage = ref(1);
-const itemsPerPage = ref(10); // Default to 10 entries per page
+const itemsPerPage = ref(5); // Default to 10 entries per page
 
 // Modal state and selected customer
 const isModalVisible = ref(false);
+const isDeleteModalVisible = ref(false);
 const selectedCustomer = ref<Customer | null>(null);
 
 const isEditModalVisible = ref(false);
@@ -242,11 +273,44 @@ const closeCustomerEditModal = () => {
   customerIdToEdit.value = null;
   customerIndexToEdit.value = -1;
 };
+
+const openDeleteModal = (customer: Customer) => {
+  selectedCustomer.value = customer;
+  isDeleteModalVisible.value = true;
+};
+
+const closeDeleteModal = (customer: Customer) => {
+  selectedCustomer.value = null;
+  isDeleteModalVisible.value = false;
+};
+
+const deleteCustomer = async () => {
+  try {
+    await customerStore.deleteCustomer(selectedCustomer!.value!.id);
+    snackbarMessage.value = "Der Kunde wurde gelöscht";
+    snackbarType.value = SnackbarType.SUCCESS;
+    isDeleteModalVisible.value = false;
+    loadCustomers();
+  } catch (error: any) {
+    snackbarMessage.value =
+      "Der Kunde konnte nicht gelöscht werden. Versuchen Sie es später erneut.";
+    snackbarType.value = SnackbarType.ERROR;
+  }
+};
 //#endregion Modals
 
-const addCustomer = () => {
+const addCustomer = async () => {
   // Logic for adding a new customer
-  console.log("Adding a new customer");
+  try {
+    await customerStore.addCustomer();
+
+    snackbarMessage.value = "Der Kunde wurde angelegt -> Neue Firma";
+    snackbarType.value = SnackbarType.SUCCESS;
+  } catch (error: any) {
+    snackbarMessage.value =
+      "Fehler beim erstellen eines neuen Kunden. Versuchen Sie es später erneut.";
+    snackbarType.value = SnackbarType.ERROR;
+  }
 };
 
 const editCustomer = (id: string, customerIndex: number) => {
@@ -260,16 +324,12 @@ const editCustomer = (id: string, customerIndex: number) => {
   isEditModalVisible.value = true;
 };
 
-const deleteCustomer = (id: string) => {
-  // Logic for deleting a customer
-  console.log(`Deleting customer ${id}`);
-};
-
 // Sorting logic
 const sortTable = (column: string) => {
   if (sortBy.value === column) {
     sortDirection.value = sortDirection.value === "asc" ? "desc" : "asc"; // Toggle sort direction
   } else {
+    console.log("COLUMN:", column);
     sortBy.value = column;
     sortDirection.value = "asc"; // Default to ascending
   }
@@ -280,6 +340,7 @@ const sortTable = (column: string) => {
 const paginatedCustomers = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value;
   const end = start + itemsPerPage.value;
+  console.log(start, end);
   return sortedCustomers.value.slice(start, end);
 });
 

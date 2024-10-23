@@ -13,8 +13,8 @@ const app = createApp(App);
 app.config.globalProperties.$axios = axios;
 
 app.use(createPinia());
-app.use(router);
 
 setupAxios();
+app.use(router);
 
 app.mount("#app");

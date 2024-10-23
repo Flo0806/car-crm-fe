@@ -32,6 +32,7 @@ const setup = () => {
           originalConfig.retry = true; // Set retry flag to avoid infinite loops
 
           if (!localStorage.getItem("refreshToken")) {
+            console.warn("No refresh token found");
             await router.push("/login");
             return Promise.reject(err);
           }
@@ -42,10 +43,10 @@ const setup = () => {
               refreshToken: localStorage.getItem("refreshToken"),
             });
 
-            const { accessToken, refreshToken } = rs.data;
+            const { accessToken } = rs.data;
 
             // Store new tokens in localStorage
-            localStorage.setItem("refreshToken", refreshToken);
+            localStorage.setItem("accessToken", accessToken);
 
             // Set the new access token to the original request and resend it
             originalConfig.headers["x-access-token"] = accessToken;
@@ -56,9 +57,6 @@ const setup = () => {
             await router.push("/login");
             return Promise.reject(_error);
           }
-        } else {
-          await router.push("/login");
-          return Promise.reject(err);
         }
       }
 

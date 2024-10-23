@@ -47,7 +47,7 @@ const props = defineProps({
   },
   itemsPerPage: {
     type: Number,
-    default: 1,
+    default: 5,
   },
   perPageOptions: {
     type: Array as () => number[],
@@ -59,7 +59,6 @@ const emit = defineEmits(["pageChanged", "perPageChanged"]);
 
 // Intern data for items per page e.g.
 const totalPages = ref(Math.ceil(props.totalItems / props.itemsPerPage));
-console.log("TOTAL", totalPages, props.totalItems, props.itemsPerPage);
 const selectedPerPage = ref(props.itemsPerPage);
 
 // Watch total items per page
